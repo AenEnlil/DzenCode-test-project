@@ -1,7 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter
 
-from .views import TestView
+from .views import CommentViewSet
+
+comments_router = SimpleRouter()
+comments_router.register('', CommentViewSet)
 
 urlpatterns = [
-    path('test', TestView.as_view())
+    path('', include(comments_router.urls))
 ]
