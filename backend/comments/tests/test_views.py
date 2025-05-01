@@ -68,7 +68,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertTrue(first_comment.get('created_at') > last_comment.get('created_at'))
 
     def test_create_with_valid_data_without_homepage(self):
-        data = {'email': 'test_case@gmail.com', 'username': 'test_user', 'text': 'test text'}
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text'}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
         self.assertFalse(comments_already_exists)
@@ -85,7 +85,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertIsNone(comment.homepage)
 
     def test_create_with_valid_data_with_homepage(self):
-        data = {'email': 'test_case@gmail.com', 'username': 'test_user', 'text': 'test text',
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text',
                 'homepage': 'https://test.com'}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
@@ -104,7 +104,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertEqual(comment.homepage, data.get('homepage'))
 
     def test_create_with_invalid_email(self):
-        data = {'email': 'invalid_email', 'username': 'test_user', 'text': 'test text'}
+        data = {'email': 'invalid_email', 'username': 'testuser', 'text': 'test text'}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
         self.assertFalse(comments_already_exists)
@@ -118,7 +118,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertFalse(comment_exists)
 
     def test_create_with_invalid_homepage_format(self):
-        data = {'email': 'test_case@gmail.com', 'username': 'test_user', 'text': 'test text',
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text',
                 'homepage': 'invalid_homepage'}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
@@ -136,7 +136,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         comment_to_answer = self.model.objects.all().first()
         self.assertTrue(comment_to_answer)
 
-        data = {'email': 'test_case@gmail.com', 'username': 'test_user', 'text': 'test text',
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text',
                 'parent': comment_to_answer.id}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
@@ -154,7 +154,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertEqual(comment.parent.pk, comment_to_answer.id)
 
     def test_create_answer_to_not_existed_comment(self):
-        data = {'email': 'test_case@gmail.com', 'username': 'test_user', 'text': 'test text',
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text',
                 'parent': 999}
         url = reverse('comment-list')
         comments_already_exists = self.model.objects.filter(email=data.get('email')).exists()
