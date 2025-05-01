@@ -37,11 +37,28 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
 
     @classmethod
     def setUpTestData(cls):
-        comments = cls.create_main_comments(number_of_comments=4)
+        comments = cls.create_main_comments(number_of_comments=40)
 
         cls.comment_with_answers = comments[0]
         comments_to_answer = [comments[0]]
         cls.create_answers(comments_to_answer, answer_depth=5, answer_quantity=2)
+
+    def test_list_paginated(self):
+        url = reverse('comment-list')
+        main_comments = self.model.objects.filter(parent=None).order_by('-created_at')
+        response = self.client.get(url)
+        response_data = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+        self.assertIn('count', response_data)
+        self.assertIn('results', response_data)
+        self.assertIn('previous', response_data)
+        self.assertIn('next', response_data)
+        self.assertEqual(len(main_comments), response_data.get('count'))
+
+        comments_from_response = response_data.get('results')
+        self.assertNotEqual(len(main_comments), len(comments_from_response))
+        self.assertTrue(response_data.get('next'))
 
     def test_list_return_only_main_comments(self):
         url = reverse('comment-list')
@@ -52,8 +69,11 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response_data)
-        self.assertEqual(len(main_comments), len(response_data))
-        self.assertEqual(main_comments[0].id, response_data[0].get('id'))
+        self.assertEqual(len(main_comments), response_data.get('count'))
+
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+        self.assertEqual(main_comments[0].id, comments_from_response[0].get('id'))
 
     def test_list_comments_lifo_sorted(self):
         url = reverse('comment-list')
@@ -63,7 +83,10 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response_data)
 
-        first_comment, last_comment = response_data[0], response_data[-1]
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+
+        first_comment, last_comment = comments_from_response[0], comments_from_response[-1]
         self.assertNotEqual(first_comment, last_comment)
         self.assertTrue(first_comment.get('created_at') > last_comment.get('created_at'))
 
