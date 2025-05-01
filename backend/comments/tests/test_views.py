@@ -186,3 +186,31 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         response_data = response.data
         self.assertEqual(response.status_code, 404)
         self.assertTrue(response_data)
+
+    def test_get_replies(self):
+        answers = self.comment_with_answers.replies.all().order_by('-created_at').values()
+        self.assertTrue(answers)
+
+        url = reverse('comment-get-replies', kwargs={'pk': self.comment_with_answers.pk})
+        response = self.client.get(url)
+        response_data = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+        self.assertEqual(len(answers), len(response_data))
+        self.assertEqual(answers[0].get('id'), response_data[0].get('id'))
+
+    def test_get_replies_for_comments_without_answers(self):
+        comment_without_answers = self.model.objects.filter(pk=2).first()
+        self.assertTrue(comment_without_answers)
+        self.assertFalse(comment_without_answers.replies.all())
+
+        url = reverse('comment-get-replies', kwargs={'pk': comment_without_answers.pk})
+        response = self.client.get(url)
+        response_data = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response_data)
+
+    def test_get_replies_for_non_existing_comment(self):
+        url = reverse('comment-get-replies', kwargs={'pk': 999})
+        response = self.client.get(url)
+        self.assertFalse(response.data)
