@@ -1,3 +1,4 @@
+from django.db.models import Exists, OuterRef
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import ListModelMixin
@@ -5,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .models import Comment
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, RepliesSerializer
+from .paginators import CommentsListPaginator, RepliesPaginator
 
 
 class CommentViewSet(GenericViewSet, ListModelMixin):
@@ -15,6 +17,30 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
     filter_backends = [OrderingFilter]
     ordering_fields = ['email', 'username', 'created_at']
     ordering = ['-created_at']
+    pagination_classes = {'list': CommentsListPaginator, 'get_replies': RepliesPaginator}
+
+    def get_pagination_class(self):
+        return self.pagination_classes.get(self.action, None)
+
+    def paginate_queryset(self, queryset):
+        pagination_class = self.get_pagination_class()
+        if pagination_class is None:
+            return None
+
+        paginator = pagination_class()
+        self._dynamic_paginator = paginator
+        return paginator.paginate_queryset(queryset, self.request, view=self)
+
+    def get_paginated_response(self, data):
+        paginator = getattr(self, '_dynamic_paginator', None)
+        if paginator is None:
+            return Response(data)
+        return paginator.get_paginated_response(data)
+
+    def get_serializer_class(self):
+        if self.action == 'get_replies':
+            return RepliesSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
         queryset = self.queryset
@@ -37,6 +63,14 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
 
     @action(methods=['get'], detail=False, url_path='(?P<pk>[0-9]+)/replies')
     def get_replies(self, request, *args, **kwargs):
-        queryset = self.get_queryset().order_by('-created_at')
-        serializer = self.serializer_class(queryset, many=True)
+        # check if replies has nested replies
+        subquery = Comment.objects.filter(parent=OuterRef('pk'))
+        queryset = self.get_queryset().order_by('-created_at').annotate(has_replies=Exists(subquery))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

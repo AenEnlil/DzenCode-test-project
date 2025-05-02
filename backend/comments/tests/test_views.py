@@ -18,17 +18,13 @@ class CommentsTestDataMixin:
         return comments
 
     @classmethod
-    def create_answers(cls, comments_to_answer: List[Comment], answer_depth: int, answer_quantity: int) -> List[Comment]:
+    def create_answers_for_comment(cls, comment_to_answer: Comment, answer_quantity: int) -> List[Comment]:
         created_answers = []
-        for i in range(answer_depth):
-            answers = []
-            for comment in comments_to_answer:
-                for j in range(answer_quantity):
-                    answers.append(
-                        Comment(text=f'answer{i}_{j}', username=f'user{i}', email=f'test{i}.mail.com', parent=comment))
-            Comment.objects.bulk_create(answers)
-            created_answers.extend(answers)
-            comments_to_answer = answers
+        for i in range(answer_quantity):
+            created_answers.append(
+                        Comment(text=f'answer{i}', username=f'user{i}', email=f'test{i}.mail.com',
+                                parent=comment_to_answer))
+        Comment.objects.bulk_create(created_answers)
         return created_answers
 
     @classmethod
@@ -44,8 +40,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         comments = cls.create_main_comments(number_of_comments=40)
 
         cls.comment_with_answers = comments[0]
-        comments_to_answer = [comments[0]]
-        cls.create_answers(comments_to_answer, answer_depth=5, answer_quantity=2)
+        cls.create_answers_for_comment(comments[0], answer_quantity=20)
 
     def test_list_paginated(self):
         url = reverse('comment-list')
@@ -259,6 +254,19 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertEqual(response.status_code, 404)
         self.assertTrue(response_data)
 
+    def test_get_replies_paginated(self):
+        answers = self.comment_with_answers.replies.all().order_by('-created_at').values()
+        url = reverse('comment-get-replies', kwargs={'pk': self.comment_with_answers.pk})
+        response = self.client.get(url)
+        response_data = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+        self.assertIn('count', response_data)
+        self.assertIn('results', response_data)
+        self.assertIn('previous', response_data)
+        self.assertIn('next', response_data)
+        self.assertEqual(len(answers), response_data.get('count'))
+
     def test_get_replies(self):
         answers = self.comment_with_answers.replies.all().order_by('-created_at').values()
         self.assertTrue(answers)
@@ -268,8 +276,10 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         response_data = response.data
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response_data)
-        self.assertEqual(len(answers), len(response_data))
-        self.assertEqual(answers[0].get('id'), response_data[0].get('id'))
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+        self.assertEqual(len(answers), response_data.get('count'))
+        self.assertEqual(answers[0].get('id'), comments_from_response[0].get('id'))
 
     def test_get_replies_for_comments_without_answers(self):
         comment_without_answers = self.model.objects.filter(pk=2).first()
@@ -280,9 +290,18 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         response = self.client.get(url)
         response_data = response.data
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response_data)
+        self.assertFalse(response_data.get('count'))
+        self.assertFalse(response_data.get('next'))
+        self.assertFalse(response_data.get('previous'))
+        self.assertFalse(response_data.get('results'))
 
     def test_get_replies_for_non_existing_comment(self):
         url = reverse('comment-get-replies', kwargs={'pk': 999})
         response = self.client.get(url)
-        self.assertFalse(response.data)
+        response_data = response.data
+        self.assertFalse(response_data.get('count'))
+        self.assertFalse(response_data.get('next'))
+        self.assertFalse(response_data.get('previous'))
+        self.assertFalse(response_data.get('results'))
+
+
