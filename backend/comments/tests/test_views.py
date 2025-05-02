@@ -31,6 +31,10 @@ class CommentsTestDataMixin:
             comments_to_answer = answers
         return created_answers
 
+    @classmethod
+    def get_main_comments_queryset(cls):
+        return cls.model.objects.filter(parent=None)
+
 
 class CommentTests(APITestCase, CommentsTestDataMixin):
     comment_create_data = {}
@@ -75,7 +79,7 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertTrue(comments_from_response)
         self.assertEqual(main_comments[0].id, comments_from_response[0].get('id'))
 
-    def test_list_comments_lifo_sorted(self):
+    def test_list_comments_lifo_sorted_by_default(self):
         url = reverse('comment-list')
         response = self.client.get(url)
         response_data = response.data
@@ -89,6 +93,51 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         first_comment, last_comment = comments_from_response[0], comments_from_response[-1]
         self.assertNotEqual(first_comment, last_comment)
         self.assertTrue(first_comment.get('created_at') > last_comment.get('created_at'))
+
+    def test_list_comments_lifo_sorted_when_invalid_ordering_field_passed(self):
+        url = reverse('comment-list')
+        response = self.client.get(url, query_params={'ordering': 'invalid_field'})
+        response_data = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+
+        first_comment, last_comment = comments_from_response[0], comments_from_response[-1]
+        self.assertNotEqual(first_comment, last_comment)
+        self.assertTrue(first_comment.get('created_at') > last_comment.get('created_at'))
+
+    def test_list_comments_ordering_by_username(self):
+        comments_ordered_by_username = self.get_main_comments_queryset().order_by('username')
+        url = reverse('comment-list')
+        response = self.client.get(url, query_params={'ordering': 'username'})
+        response_data = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+        first_comment_from_query, first_comment_from_response = comments_ordered_by_username[0], \
+            comments_from_response[0]
+        self.assertEqual(first_comment_from_query.id, first_comment_from_response.get('id'))
+
+    def test_list_comments_ordering_by_email(self):
+        comments_ordered_by_username = self.get_main_comments_queryset().order_by('email')
+        url = reverse('comment-list')
+        response = self.client.get(url, query_params={'ordering': 'email'})
+        response_data = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response_data)
+
+        comments_from_response = response_data.get('results')
+        self.assertTrue(comments_from_response)
+        first_comment_from_query, first_comment_from_response = comments_ordered_by_username[0], \
+            comments_from_response[0]
+        self.assertEqual(first_comment_from_query.id, first_comment_from_response.get('id'))
 
     def test_create_with_valid_data_without_homepage(self):
         data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text'}

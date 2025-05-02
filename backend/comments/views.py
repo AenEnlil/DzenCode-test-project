@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -9,8 +10,11 @@ from .serializers import CommentSerializer
 
 class CommentViewSet(GenericViewSet, ListModelMixin):
 
-    queryset = Comment.objects.all().order_by('-created_at')
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['email', 'username', 'created_at']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         queryset = self.queryset
@@ -33,6 +37,6 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
 
     @action(methods=['get'], detail=False, url_path='(?P<pk>[0-9]+)/replies')
     def get_replies(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().order_by('-created_at')
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
