@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'comments',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -137,3 +139,6 @@ ALLOWED_HTML_TAGS = ['a', 'code', 'i', 'strong']
 ALLOWED_HTML_ATTRIBUTES = {
         'a': ['href', 'title']
     }
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:8000']
