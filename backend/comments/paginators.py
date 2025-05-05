@@ -2,7 +2,7 @@ from rest_framework.pagination import PageNumberPagination, LimitOffsetPaginatio
 
 
 class CommentsListPaginator(PageNumberPagination):
-    page_size = 2
+    page_size = 25
 
 
 class RepliesPaginator(LimitOffsetPagination):
