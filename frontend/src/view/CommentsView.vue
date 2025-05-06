@@ -24,7 +24,7 @@
     </tr>
    </thead>
    <tbody>
-    <tr v-for="comment in comments" :key="comment.id">
+    <tr v-for="comment in comments" :key="comment.id" @click="goToComment(comment.id)">
      <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
      <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
      <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
@@ -146,8 +146,12 @@
           } catch (error) {
             console.log("Error while sending comment", error)
           }
-
         },
+
+        goToComment(id) {
+          this.$router.push(`/comments/${id}`)
+        },
+
     },
     computed: {
      totalPages() {
