@@ -5,6 +5,7 @@
   <div v-else>
    <div v-if="comments_count === 0">
     <p>no comments</p>
+    <CommentForm :onSubmit="createComment" />
    </div>
    <table v-else>
    <thead>
@@ -44,8 +45,12 @@
  import axios from 'axios'
  import { toRaw } from 'vue'
  import { API_BASE_URL, PAGE_SIZE } from '@/config'
+ import CommentForm from '@/components/CommentForm.vue'
  export default {
     name: 'CommentsTable',
+    components: {
+     CommentForm
+    },
     data() {
         return {
             comments: [],
@@ -124,6 +129,17 @@
          if (this.previous_page) {
           this.fetchComments({url: this.previous_page})
          }
+        },
+
+        async createComment(formData) {
+          formData.parent = null
+
+          try {
+            await axios.post(API_BASE_URL+'/comments/', formData)
+          } catch (error) {
+            console.log("Error while sending comment", error)
+          }
+
         },
     },
     computed: {
