@@ -7,7 +7,7 @@
     <p>no comments</p>
     <CommentForm :onSubmit="createComment" />
    </div>
-   <table v-else>
+   <table class="comments-table" v-else>
    <thead>
     <tr>
      <th @click="sortBy('email')">Email
@@ -25,11 +25,11 @@
    </thead>
    <tbody>
     <tr v-for="comment in comments" :key="comment.id">
-     <td> {{ comment.email }} </td>
-     <td> {{ comment.username }} </td>
-     <td> {{ comment.homepage }} </td>
+     <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
+     <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
+     <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
      <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
-     <td> {{ comment.created_at }} </td>
+     <td class="date-cell"> {{ comment.created_at }} </td>
     </tr>
    </tbody>
   </table>
@@ -83,7 +83,10 @@
         },
 
         isTooLong(text, limit) {
+        if (text) {
          return text.length > limit
+        }
+        else {return false}
         },
 
         getTooltip(text, limit) {
@@ -151,47 +154,48 @@
 </script>
 
 <style scoped>
- table {
-  width: 100%;
-  border-collapse: collapse;
+ .comments-table {
+   width: 100%;
+   table-layout: fixed;
+   border-collapse: collapse;
  }
 
- th, td {
-  max-width: 250px;
-  word-wrap: break-word;
-  padding: 8px, 12px;
-  border: 1px solid #ddd;
+ .comments-table th, .comments-table td {
+   width: 300px;
+   padding: 8px, 12px;
+   border: 1px solid #ccc;
+   text-align: left;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: break-word;
  }
- .text-cell {
-  max-width: 600px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+th:nth-child(1),
+td:nth-child(1){
+   width: 200px; /* email */
+ }
+th:nth-child(2),
+td:nth-child(2){
+   width: 200px; /* username */
+ }
+th:nth-child(3),
+td:nth-child(3){
+   width: 250px; /* homepage */
+ }
+th:nth-child(4),
+td:nth-child(4){
+   width: 600px; /* text */
+ }
+th:nth-child(5),
+td:nth-child(5){
+   width: 200px; /* data */
+ }
+
+ .text-cell, .email-cell, .username-cell, .homepage-cell {
   cursor: help;
  }
 
- .text-cell:hover {
+ .text-cell:hover, .email-cell:hover, .username-cell:hover, .homepage-cell:hover {
     box-shadow: 0 4px 6px -2px rgba(0,0,0,0.2);
- }
-
- .text-cell[title] {
-  position: relative
- }
-
- .text-cell[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  background-color: #333;
-  color: white;
-  padding: 6px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: pre-wrap;
-  max-width: 300px;
-  width: max-content;
  }
 
  .arrow {
