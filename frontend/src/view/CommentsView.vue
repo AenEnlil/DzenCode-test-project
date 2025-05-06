@@ -8,17 +8,17 @@
     <CommentForm :onSubmit="createComment" />
    </div>
    <table class="comments-table" v-else>
-   <thead>
+   <thead class="comments-table-header">
     <tr>
-     <th @click="sortBy('email')">Email
+     <th class="sortable" @click="sortBy('email')">Email
       <span class="arrow" :class="sortedBy === 'email' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
      </th>
-     <th @click="sortBy('username')">Username
+     <th class="sortable" @click="sortBy('username')">Username
       <span class="arrow" :class="sortedBy === 'username' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
      </th>
      <th>Homepage</th>
      <th>Text</th>
-     <th @click="sortBy('created_at')">Date
+     <th class="sortable" @click="sortBy('created_at')">Date
       <span class="arrow" :class="sortedBy === 'created_at' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
      </th>
     </tr>
@@ -164,7 +164,7 @@
    width: 300px;
    padding: 8px, 12px;
    border: 1px solid #ccc;
-   text-align: left;
+   text-align: center;
    overflow: hidden;
    text-overflow: ellipsis;
    white-space: break-word;
@@ -190,6 +190,26 @@ td:nth-child(5){
    width: 200px; /* data */
  }
 
+.comments-table-header th {
+  font-family: Lato-Bold;
+  font-size: 18px;
+  color: #fff;
+  background-color: #6c7ae0;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  text-align: center;
+}
+
+.comments-table-header th.sortable {
+   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.comments-table-header th.sortable:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
  .text-cell, .email-cell, .username-cell, .homepage-cell {
   cursor: help;
  }
@@ -208,15 +228,15 @@ td:nth-child(5){
 }
 
 .arrow.up {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 4px solid #ff1515;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 7px solid currentColor;
 }
 
 .arrow.down {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid #ff1515;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid currentColor;
 }
 
 .pagination {
