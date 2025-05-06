@@ -211,15 +211,19 @@ td:nth-child(5){
 
 .comments-table-header th.sortable:hover {
   background-color: #f0f0f0;
-  color: #333;
+  color: #6c7ae0;
 }
 
- .text-cell, .email-cell, .username-cell, .homepage-cell {
-  cursor: help;
+ .text-cell:hover, .email-cell:hover, .username-cell:hover, .homepage-cell:hover {
+    box-shadow: inset 0 4px 6px -2px rgba(0,0,0,0.2);
  }
 
- .text-cell:hover, .email-cell:hover, .username-cell:hover, .homepage-cell:hover {
-    box-shadow: 0 4px 6px -2px rgba(0,0,0,0.2);
+ tbody td {
+  cursor: pointer;
+ }
+
+ tbody tr:hover {
+   box-shadow: 0 4px 6px -2px rgba(0,0,0,0.2);
  }
 
  .arrow {
