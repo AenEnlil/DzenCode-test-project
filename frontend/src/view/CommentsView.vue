@@ -29,7 +29,7 @@
      <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
      <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
      <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
-     <td class="date-cell"> {{ comment.created_at }} </td>
+     <td class="date-cell"> {{ formatDate(comment.created_at) }} </td>
     </tr>
    </tbody>
   </table>
@@ -98,6 +98,10 @@
           return text.slice(0, limit) + '...' }
          else {
           return text }
+        },
+
+        formatDate(string_date) {
+          return new Date(string_date).toLocaleString()
         },
 
         getSortParams() {
@@ -201,7 +205,7 @@ td:nth-child(5){
 }
 
 .comments-table-header th.sortable {
-   cursor: pointer;
+  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
