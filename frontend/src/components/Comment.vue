@@ -73,7 +73,7 @@
                 try {
                     const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
                                                      {params: query})
-                    this.addReplies(response.data.results)
+                    this.addReplies({data: response.data.results})
                     this.checkIfHasMoreReplies(response.data.next)
                     this.repliesLoaded = true
                 } catch(error) {
@@ -83,10 +83,15 @@
                 }
             },
 
-            addReplies(data) {
+            addReplies({data, toStart=false}) {
                 if (!this.comment.replies) {
                         this.comment.replies = []}
-                this.comment.replies.push(...data);
+                if (toStart) {
+                    this.comment.replies.unshift(...data)
+                }
+                else {
+                    this.comment.replies.push(...data)
+                }
             },
 
             formatDate,
@@ -115,7 +120,7 @@
 
                 try {
                     const response = await axios.post(API_BASE_URL+'/comments/', formData)
-                    this.addReplies([response.data])
+                    this.addReplies({data: [response.data], toStart: true})
                     this.showModal = false
                 } catch (error) {
                     console.log("Error while sending comment", error)
