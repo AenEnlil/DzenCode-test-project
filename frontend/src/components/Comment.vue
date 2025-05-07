@@ -5,12 +5,15 @@
             <p>{{comment.id}}</p>
             <strong> {{comment.username}} </strong>
             <p>{{ formatDate(comment.created_at) }}</p>
+            <button v-if="comment.replies && comment.replies.length" @click="toggleReplies">toggle replies</button>
         </div>
         <div class="comment-body">
             <p> {{comment.text}} </p>
         </div>
-        <div v-if="comment.replies && comment.replies.length" class="replies">
-            <Comment v-for="reply in comment.replies" :key="reply.id" :comment="reply" />
+        <div v-if="repliesVisible">
+            <div v-if="comment.replies && comment.replies.length" class="replies">
+                <Comment v-for="reply in comment.replies" :key="reply.id" :comment="reply" />
+            </div>
         </div>
         <div v-if="comment.has_replies && !loading" class="load-replies">
             <button @click="loadReplies(offsetQuery)">Show replies</button>
@@ -35,7 +38,8 @@
             return {
                 loading: false,
                 repliesLoaded: false,
-                offsetQuery: {}
+                offsetQuery: {},
+                repliesVisible: true
             }
         },
         methods: {
@@ -71,6 +75,10 @@
                     this.comment.has_replies = false
                 }
 
+            },
+
+            toggleReplies() {
+                this.repliesVisible = !this.repliesVisible
             }
 
         }
