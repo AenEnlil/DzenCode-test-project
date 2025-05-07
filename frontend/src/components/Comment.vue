@@ -10,7 +10,7 @@
             <Comment v-for="reply in comment.replies" :key="reply.id" :comment="reply" />
         </div>
         <div v-if="comment.has_replies && !loading" class="load-replies">
-            <button @click="loadReplies">Show replies</button>
+            <button @click="loadReplies(offsetQuery)">Show replies</button>
         </div>
     </div>
 
@@ -30,16 +30,18 @@
         data() {
             return {
                 loading: false,
-                repliesLoaded: false
+                repliesLoaded: false,
+                offsetQuery: {}
             }
         },
         methods: {
-            async loadReplies({query={}}) {
+            async loadReplies(query={}) {
                 this.loading = true
                 try {
                     const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
                                                      {params: query})
                     this.addReplies(response.data.results)
+                    this.checkIfHasMoreReplies(response.data.next)
                     this.repliesLoaded = true
                 } catch(error) {
                     console.log(error)
@@ -53,6 +55,17 @@
                 if (!this.comment.replies) {
                         this.comment.replies = []}
                 this.comment.replies.push(...data);
+            },
+
+            checkIfHasMoreReplies(linkToNextPage) {
+                if (linkToNextPage) {
+                    const parsedUrl = new URL(linkToNextPage);
+                    const offset_value = parsedUrl.searchParams.get('offset')
+                    this.offsetQuery = {offset: offset_value}
+                } else {
+                    this.comment.has_replies = false
+                }
+
             }
 
         }
