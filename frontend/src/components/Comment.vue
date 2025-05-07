@@ -1,10 +1,13 @@
 <template>
     <div v-if="loading">Loading...</div>
     <div v-else class="comment">
-        <div class="comment-body">
-            <strong> {{comment.username}} </strong>
-            <p> {{comment.text}} </p>
+        <div class="comment-header">
             <p>{{comment.id}}</p>
+            <strong> {{comment.username}} </strong>
+            <p>{{comment.created_at}}</p>
+        </div>
+        <div class="comment-body">
+            <p> {{comment.text}} </p>
         </div>
         <div v-if="comment.replies && comment.replies.length" class="replies">
             <Comment v-for="reply in comment.replies" :key="reply.id" :comment="reply" />
@@ -44,7 +47,6 @@
                     this.checkIfHasMoreReplies(response.data.next)
                     this.repliesLoaded = true
                 } catch(error) {
-                    console.log(error)
                     console.error('Error while loading replies')
                 } finally {
                     this.loading = false
@@ -74,10 +76,16 @@
 
 <style>
     .comment {
+        width: 1000px;
         border-left: 2px solid #ddd;
         margin-left: 1rem;
         padding-left: 1rem;
         margin-top: 1rem;
+    }
+    .comment-header {
+        background: grey;
+        gap: 5px;
+        display: flex;
     }
     .comment-body {
         background: #f9f9f9;
