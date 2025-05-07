@@ -87,7 +87,9 @@
                 if (!this.comment.replies) {
                         this.comment.replies = []}
                 if (toStart) {
-                    this.comment.replies.unshift(...data)
+                    if (this.repliesLoaded || !this.comment.has_replies) {
+                        this.comment.replies.unshift(...data)
+                    }
                 }
                 else {
                     this.comment.replies.push(...data)
