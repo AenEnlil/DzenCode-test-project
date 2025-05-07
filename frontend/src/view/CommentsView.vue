@@ -45,6 +45,7 @@
  import axios from 'axios'
  import { toRaw } from 'vue'
  import { API_BASE_URL, PAGE_SIZE } from '@/config'
+ import { formatDate } from '@/service.js'
  import CommentForm from '@/components/CommentForm.vue'
  export default {
     name: 'CommentsTable',
@@ -100,9 +101,7 @@
           return text }
         },
 
-        formatDate(string_date) {
-          return new Date(string_date).toLocaleString()
-        },
+        formatDate,
 
         getSortParams() {
          var order_field = this.sortedBy

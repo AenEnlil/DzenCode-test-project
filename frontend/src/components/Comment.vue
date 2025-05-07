@@ -4,7 +4,7 @@
         <div class="comment-header">
             <p>{{comment.id}}</p>
             <strong> {{comment.username}} </strong>
-            <p>{{comment.created_at}}</p>
+            <p>{{ formatDate(comment.created_at) }}</p>
         </div>
         <div class="comment-body">
             <p> {{comment.text}} </p>
@@ -22,6 +22,7 @@
 <script>
     import axios from 'axios'
     import { API_BASE_URL } from '@/config'
+     import { formatDate } from '@/service.js'
     export default {
         name: 'Comment',
         props: {
@@ -58,6 +59,8 @@
                         this.comment.replies = []}
                 this.comment.replies.push(...data);
             },
+
+            formatDate,
 
             checkIfHasMoreReplies(linkToNextPage) {
                 if (linkToNextPage) {
