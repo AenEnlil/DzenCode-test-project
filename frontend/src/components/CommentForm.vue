@@ -17,6 +17,7 @@
             <input type="text" v-model="form.text" required />
         </div>
         <button type="submit"> Отправить </button>
+        <button type="button" @click="$emit('cancel')"> Отмена </button>
     </form>
 </template>
 
