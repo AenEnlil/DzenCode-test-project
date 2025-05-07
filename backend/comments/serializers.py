@@ -18,5 +18,5 @@ class CommentSerializer(serializers.ModelSerializer):
         return value
 
 
-class RepliesSerializer(CommentSerializer):
+class CommentDetailsSerializer(CommentSerializer):
     has_replies = serializers.BooleanField()

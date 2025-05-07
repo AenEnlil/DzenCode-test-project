@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .models import Comment
-from .serializers import CommentSerializer, RepliesSerializer
+from .serializers import CommentSerializer, CommentDetailsSerializer
 from .paginators import CommentsListPaginator, RepliesPaginator
 
 
@@ -38,8 +38,8 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         return paginator.get_paginated_response(data)
 
     def get_serializer_class(self):
-        if self.action == 'get_replies':
-            return RepliesSerializer
+        if self.action == 'get_replies' or self.action == 'retrieve':
+            return CommentDetailsSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -58,7 +58,8 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.serializer_class(instance)
+        instance.has_replies = Comment.objects.filter(parent=instance.id).exists()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     @action(methods=['get'], detail=False, url_path='(?P<pk>[0-9]+)/replies')
