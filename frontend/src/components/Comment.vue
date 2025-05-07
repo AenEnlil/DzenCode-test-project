@@ -4,12 +4,12 @@
         <div class="comment-body">
             <strong> {{comment.username}} </strong>
             <p> {{comment.text}} </p>
-            <p>{{replies}}</p>
+            <p>{{comment.id}}</p>
         </div>
         <div v-if="comment.replies && comment.replies.length" class="replies">
             <Comment v-for="reply in comment.replies" :key="reply.id" :comment="reply" />
         </div>
-        <div v-if="!repliesLoaded && !loading" class="load-replies">
+        <div v-if="comment.has_replies && !loading" class="load-replies">
             <button @click="loadReplies">Show replies</button>
         </div>
     </div>
@@ -25,8 +25,7 @@
             comment: {
                 type: Object,
                 required: true
-            },
-            replies: Object
+            }
         },
         data() {
             return {
@@ -35,13 +34,12 @@
             }
         },
         methods: {
-            async loadReplies() {
+            async loadReplies({query={}}) {
                 this.loading = true
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`)
-                    if (!this.comment.replies) {
-                        this.comment.replies = []}
-                    this.comment.replies.push(...response.data.results);
+                    const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
+                                                     {params: query})
+                    this.addReplies(response.data.results)
                     this.repliesLoaded = true
                 } catch(error) {
                     console.log(error)
@@ -49,7 +47,14 @@
                 } finally {
                     this.loading = false
                 }
+            },
+
+            addReplies(data) {
+                if (!this.comment.replies) {
+                        this.comment.replies = []}
+                this.comment.replies.push(...data);
             }
+
         }
     }
 </script>
