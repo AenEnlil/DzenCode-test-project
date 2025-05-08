@@ -125,6 +125,9 @@
                     this.addReplies({data: [response.data], toStart: true})
                     this.showModal = false
                 } catch (error) {
+                    if (error.response && error.response.data) {
+                        return Promise.reject(error.response.data)
+                    }
                     console.log("Error while sending comment", error)
             }
         },
