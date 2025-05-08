@@ -36,8 +36,8 @@
                 </ul>
             </div>
         </div>
-        <button type="submit"> Отправить </button>
-        <button type="button" @click="$emit('cancel')"> Отмена </button>
+        <button class="form-button" type="submit"> Отправить </button>
+        <button class="form-button cancel" type="button" @click="$emit('cancel')"> Отмена </button>
     </form>
 </template>
 
@@ -132,6 +132,12 @@
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+    * {
+        font-family: "Montserrat";
+    }
+
     .comment-form {
       display: flex;
       flex-direction: column;
@@ -142,4 +148,49 @@
       padding: 6px;
       width: 100%;
     }
+
+    .form-button {
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.form-button:hover {
+  background-color: #6c7ae0;
+}
+
+form {
+    width: 350px;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+li {
+    color: #b90d0d;
+    font-size: 14px;
+}
+
+label {
+    font-weight: 500;
+}
+
 </style>

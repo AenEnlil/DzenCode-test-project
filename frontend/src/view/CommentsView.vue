@@ -1,43 +1,57 @@
 <template>
- <div class="p-4">
+ <div>
   <div v-if="loading">Loading...</div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
    <div v-if="comments_count === 0">
-    <p>no comments</p>
-    <CommentForm :onSubmit="createComment" />
+    <p class="no-comments-text">there is no comments yet, but you can...</p>
+    <div class="create-comment-button">
+      <button @click="showModalWithForm">Create comment</button>
+     </div>
    </div>
-   <table class="comments-table" v-else>
-   <thead class="comments-table-header">
-    <tr>
-     <th class="sortable" @click="sortBy('email')">Email
-      <span class="arrow" :class="sortedBy === 'email' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-     <th class="sortable" @click="sortBy('username')">Username
-      <span class="arrow" :class="sortedBy === 'username' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-     <th>Homepage</th>
-     <th>Text</th>
-     <th class="sortable" @click="sortBy('created_at')">Date
-      <span class="arrow" :class="sortedBy === 'created_at' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-    </tr>
+   <div v-else>
+     <table class="comments-table">
+      <thead class="comments-table-header">
+       <tr>
+         <th class="sortable" @click="sortBy('email')">Email
+          <span class="arrow" :class="sortedBy === 'email' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+         </th>
+         <th class="sortable" @click="sortBy('username')">Username
+           <span class="arrow" :class="sortedBy === 'username' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+         </th>
+         <th>Homepage</th>
+         <th>Text</th>
+         <th class="sortable" @click="sortBy('created_at')">Date
+          <span class="arrow" :class="sortedBy === 'created_at' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+        </th>
+       </tr>
    </thead>
-   <tbody>
-    <tr v-for="comment in comments" :key="comment.id" @click="goToComment(comment.id)">
-     <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
-     <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
-     <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
-     <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
-     <td class="date-cell"> {{ formatDate(comment.created_at) }} </td>
-    </tr>
-   </tbody>
+      <tbody>
+        <tr v-for="comment in comments" :key="comment.id" @click="goToComment(comment.id)">
+         <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
+         <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
+         <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
+         <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
+         <td class="date-cell"> {{ formatDate(comment.created_at) }} </td>
+        </tr>
+      </tbody>
   </table>
+     <div class="buttons">
+         <div class="pagination">
+       <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
+       <button :disabled="!next_page" @click="goToNextPage"> Next</button>
+     </div>
+         <div class="create-comment-button">
+      <button @click="showModalWithForm">Create comment</button>
+     </div>
+     </div>
+   </div>
   </div>
-  <div class="pagination">
-   <button :disabled="!previous_page" @click="goToPreviousPage"> Назад </button>
-   <button :disabled="!next_page" @click="goToNextPage"> Вперед </button>
-  </div>
+  <div v-if="showModal" class="modal-overlay">
+   <div class="modal-content">
+      <CommentForm :onSubmit="createComment" @cancel="showModal = false"/>
+   </div>
+    </div>
  </div>
 </template>
 
@@ -62,7 +76,8 @@
             next_page: null,
             previous_page: null,
             comments_count: null,
-            currentPage: 1
+            currentPage: 1,
+            showModal: false,
         }
     },
     mounted() {
@@ -81,6 +96,10 @@
           this.loading = false }
          catch (error) {
           console.error('error') }
+        },
+
+        showModalWithForm() {
+          this.showModal = true
         },
 
         isTooLong(text, limit) {
@@ -142,6 +161,8 @@
 
           try {
             await axios.post(API_BASE_URL+'/comments/', formData)
+            this.showModal = false
+            window.location.reload()
           } catch (error) {
             if (error.response && error.response.data) {
               return Promise.reject(error.response.data)
@@ -162,6 +183,7 @@
     }
  };
 </script>
+
 
 <style scoped>
  .comments-table {
@@ -254,7 +276,68 @@ td:nth-child(5){
 }
 
 .pagination {
-  margin-top: 10px;
+    display: flex;
+    gap: 7px;
+}
+
+.pagination button:disabled {
+    background-color: white;
+}
+
+.modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+.modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+button {
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.buttons {
+    display: flex;
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+button:hover {
+  background-color: #6c7ae0;
+}
+
+.create-comment-button {
+    margin-right: 10px;
+}
+
+.no-comments-text{
+    margin-bottom: 10px;
 }
 
 </style>
