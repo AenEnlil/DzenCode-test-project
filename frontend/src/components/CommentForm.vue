@@ -59,8 +59,56 @@
         }
       },
       methods: {
+        updateErrors({errors, field, data}) {
+            if (!errors[field]) {
+                errors[field] = [data]
+            } else {
+                errors[field].push(data)
+            }
+        },
+
+        validate() {
+            const errors = {}
+
+            if (this.form.text) {
+                if (this.form.text.length > 1500) {
+                    this.updateErrors({errors: errors, field: 'text', data: 'Text too big. Maximum size is 1500 characters'})
+                } else if (this.form.text.trim() === '') {
+                    this.updateErrors({errors: errors, field: 'text', data: 'field can`t blank'})
+                }
+            }
+
+            if (this.form.email) {
+                if (this.form.email.length > 254){
+                    this.updateErrors({errors: errors, field: 'email', data: 'Email too big. Maximum size is 254 characters'})
+                }
+            }
+
+            if (this.form.username) {
+                if (!/^[a-zA-Z0-9]+$/.test(this.form.username)) {
+                    this.updateErrors({errors: errors, field: 'username', data: 'Username can only contain Latin letters and numbers'})
+                }
+                if (this.form.username.length < 3) {
+                    this.updateErrors({errors: errors, field: 'username', data: 'Username too small. Minimum size is 3 characters'})
+                } else if (this.form.username.length > 60) {
+                    this.updateErrors({errors: errors, field: 'username', data: 'Username too big. Maximum size is 60 characters'})
+                }
+            if (this.form.homepage) {
+                if (this.form.homepage.length > 200) {
+                     this.updateErrors({errors: errors, field: 'homepage', data: 'URL too big. Maximum size is 200 characters'})
+                }
+            }
+
+            }
+            this.errors = errors
+            return Object.keys(this.errors).length === 0
+        },
+
         async handleSubmit() {
             this.errors = {}
+            if (!this.validate()){
+                return
+            }
             try {
                 if (this.onSubmit) {
                     await this.onSubmit({...this.form})
