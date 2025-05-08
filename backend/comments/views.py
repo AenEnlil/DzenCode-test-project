@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db.models import Exists, OuterRef
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -50,11 +52,26 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
             queryset = queryset.filter(parent_id=self.kwargs.get('pk'))
         return queryset
 
+    def notify_consumers(self, method: str, group: str, data: str):
+        try:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                group,
+                {
+                    "type": method,
+                    "data": data
+                }
+            )
+        except Exception as e:
+            pass
+
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        data = serializer.data
+        self.notify_consumers(method='comment_created', group='comments', data=data)
+        return Response(data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
