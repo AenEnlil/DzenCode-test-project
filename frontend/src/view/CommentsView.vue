@@ -143,8 +143,11 @@
           try {
             await axios.post(API_BASE_URL+'/comments/', formData)
           } catch (error) {
-            console.log("Error while sending comment", error)
-          }
+            if (error.response && error.response.data) {
+              return Promise.reject(error.response.data)
+            }
+            console.log("Error while creating comment", error)
+            }
         },
 
         goToComment(id) {
