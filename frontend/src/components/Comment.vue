@@ -3,13 +3,12 @@
     <div v-else class="comment">
         <div class="comment-header">
             <p>{{comment.id}}</p>
-            <strong> {{comment.username}} </strong>
-            <p>{{ formatDate(comment.created_at) }}</p>
+            <p class="username"> {{comment.username}} </p>
             <svg v-if="comment.replies && comment.replies.length"
                  @click="toggleReplies"
                  xmlns="http://www.w3.org/2000/svg"
                  viewBox="0 -960 960 960"
-                 fill="#FFFFFF"
+                 fill="black"
                  :class="['button-icons', {active: repliesVisible}]"
             ><path d="M280-80q-50 0-85-35t-35-85q0-39 22.5-70t57.5-43v-334q-35-12-57.5-43T160-760q0-50 35-85t85-35q50 0 85 35t35 85q0 39-22.5 70T320-647v7q0 50 35 85t85 35h80q83 0 141.5 58.5T720-320v7q35 12 57.5 43t22.5 70q0 50-35 85t-85 35q-50 0-85-35t-35-85q0-39 22.5-70t57.5-43v-7q0-50-35-85t-85-35h-80q-34 0-64.5-10.5T320-480v167q35 12 57.5 43t22.5 70q0 50-35 85t-85 35Zm0-80q17 0 28.5-11.5T320-200q0-17-11.5-28.5T280-240q-17 0-28.5 11.5T240-200q0 17 11.5 28.5T280-160Zm400 0q17 0 28.5-11.5T720-200q0-17-11.5-28.5T680-240q-17 0-28.5 11.5T640-200q0 17 11.5 28.5T680-160ZM280-720q17 0 28.5-11.5T320-760q0-17-11.5-28.5T280-800q-17 0-28.5 11.5T240-760q0 17 11.5 28.5T280-720Z"/>
             </svg>
@@ -21,6 +20,9 @@
                  class="button-icons modal-icon"
             ><path d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"/>
             </svg>
+            <div class="date-container">
+                <p>{{ formatDate(comment.created_at) }}</p>
+            </div>
         </div>
         <div class="comment-body">
             <p> {{comment.text}} </p>
@@ -31,7 +33,7 @@
             </div>
         </div>
         <div v-if="comment.has_replies && !loading" class="load-replies">
-            <button @click="loadReplies(offsetQuery)">Show replies</button>
+            <button class="replies-button" @click="loadReplies(offsetQuery)">Show replies</button>
         </div>
     </div>
     <div v-if="showModal" class="modal-overlay">
@@ -137,6 +139,8 @@
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
     .comment {
         width: 1000px;
         border-left: 2px solid #ddd;
@@ -144,13 +148,34 @@
         padding-left: 1rem;
         margin-top: 1rem;
     }
+
+     p {
+        font-family: "Montserrat";
+        font-optical-sizing: auto;
+        font-weight: 400;
+        font-style: normal;
+        font-variation-settings:
+        "wdth" 100;
+    }
+
     .comment-header {
-        background: #e3eaf0;
+        padding-left: 10px;
+        background: #bfc7ff;
         height: 60px;
-        gap: 5px;
+        gap: 15px;
         display: flex;
         align-items: center;
     }
+
+    .date-container {
+        margin-left: auto;
+        margin-right: 10px;
+    }
+
+    .username {
+        font-weight: bold;
+    }
+
     .comment-body {
         background: #f9f9f9;
         padding: 0.5rem;
@@ -171,7 +196,7 @@
     }
     .button-icons.active {
         opacity: 1;
-        fill: black;
+        fill: #2770f5;
     }
 
     .modal-icon {
@@ -179,7 +204,7 @@
 }
 
     .button-icons:hover {
-        fill: cornflowerblue;
+        fill: #2770f5;
     }
 
     .modal-overlay {
@@ -198,5 +223,30 @@
         padding: 20px;
         border-radius: 8px;
     }
+
+.replies-button {
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.replies-button:hover {
+  background-color: #6c7ae0;
+}
 
 </style>
