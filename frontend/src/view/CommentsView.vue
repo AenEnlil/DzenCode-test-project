@@ -4,8 +4,10 @@
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
    <div v-if="comments_count === 0">
-    <p>no comments</p>
-    <CommentForm :onSubmit="createComment" />
+    <p class="no-comments-text">there is no comments yet, but you can...</p>
+    <div class="create-comment-button">
+      <button @click="showModalWithForm">Create comment</button>
+     </div>
    </div>
    <div v-else>
      <table class="comments-table">
@@ -34,12 +36,14 @@
         </tr>
       </tbody>
   </table>
-     <div class="pagination">
-       <button :disabled="!previous_page" @click="goToPreviousPage"> Назад </button>
-       <button :disabled="!next_page" @click="goToNextPage"> Вперед </button>
+     <div class="buttons">
+         <div class="pagination">
+       <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
+       <button :disabled="!next_page" @click="goToNextPage"> Next</button>
      </div>
-     <div class="create-comment-button">
+         <div class="create-comment-button">
       <button @click="showModalWithForm">Create comment</button>
+     </div>
      </div>
    </div>
   </div>
@@ -180,6 +184,7 @@
  };
 </script>
 
+
 <style scoped>
  .comments-table {
    width: 100%;
@@ -271,7 +276,12 @@ td:nth-child(5){
 }
 
 .pagination {
-  margin-top: 10px;
+    display: flex;
+    gap: 7px;
+}
+
+.pagination button:disabled {
+    background-color: white;
 }
 
 .modal-overlay {
@@ -290,5 +300,44 @@ td:nth-child(5){
         padding: 20px;
         border-radius: 8px;
     }
+
+button {
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.buttons {
+    display: flex;
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+button:hover {
+  background-color: #6c7ae0;
+}
+
+.create-comment-button {
+    margin-right: 10px;
+}
+
+.no-comments-text{
+    margin-bottom: 10px;
+}
 
 </style>
