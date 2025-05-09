@@ -153,3 +153,6 @@ ALLOWED_HTML_ATTRIBUTES = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:8000']
+
+MEDIA_ROOT = 'uploads/'
+
