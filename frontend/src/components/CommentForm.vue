@@ -166,9 +166,54 @@
             this.updateErrors({errors: this.errors, field: 'file', data: 'Txt lower than 100KB only accepted'})
          }
         },
-        handleImageUpload(event) {
+        resizeImage(file, maxWidth = 320, maxHeight = 240) {
+          return new Promise((resolve, reject) => {
+            const img = new Image()
+            const reader = new FileReader()
+
+            reader.onload = (e) => {
+            img.src = e.target.result }
+
+            img.onload = () => {
+                let { width, height } = img;
+
+                // Keeping proportions
+                const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+                width = width * scale;
+                height = height * scale
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height)
+
+                canvas.toBlob((blob) => {
+                if (blob) {
+                    // Creating new file
+                    const resizedFile = new File([blob], file.name, { type: file.type });
+                    resolve(resizedFile);
+                } else {
+                    reject(new Error("Failed to compress image"))}
+                }, file.type) }
+                reader.onerror = reject;
+                reader.readAsDataURL(file) })
+        },
+
+        async handleImageUpload(event) {
             const image = event.target.files[0]
-            this.form.image = image
+            if(!image) {return}
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+
+            if (!allowedTypes.includes(image.type)) {
+              this.updateErrors({errors: this.errors, field: 'image', data: 'Only JPG, PNG, GIF allowed'})
+              this.form.image = null
+              return
+            }
+
+            const resizedImage = await this.resizeImage(image)
+            this.form.image = resizedImage
         }
       },
     }
