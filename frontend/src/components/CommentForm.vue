@@ -158,6 +158,7 @@
         },
         handleFileUpload(event) {
          const file = event.target.files[0]
+         this.errors.file = null
 
          if (file && file.type === 'text/plain' && file.size <= 100 * 1024){
             this.form.file = file
@@ -203,6 +204,7 @@
 
         async handleImageUpload(event) {
             const image = event.target.files[0]
+            this.errors.image = null
             if(!image) {return}
 
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
