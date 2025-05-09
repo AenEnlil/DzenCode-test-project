@@ -60,7 +60,7 @@
  import { toRaw } from 'vue'
  import { API_BASE_URL, PAGE_SIZE, WS_BASE_URL } from '@/config'
  import { formatDate } from '@/service.js'
- import { connectWS, subscribeWS, unsubscribeWS } from '@/services/websocket.js'
+ import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
  import CommentForm from '@/components/CommentForm.vue'
  export default {
     name: 'CommentsTable',
@@ -83,7 +83,6 @@
     },
     mounted() {
         this.fetchComments()
-        connectWS(`${WS_BASE_URL}/ws/comments/`)
         subscribeWS(this.handleWSMessage)
     },
     beforeUnmount() {

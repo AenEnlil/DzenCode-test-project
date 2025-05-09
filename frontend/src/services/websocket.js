@@ -1,8 +1,9 @@
 let socket = null;
 let subscribers = new Set();
+let socketCloseTimeout = null;
 
 export function connectWS(url) {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socket || socket.readyState === WebSocket.CLOSING || socket.readyState === WebSocket.CLOSED) {
         socket = new WebSocket(url)
 
         socket.onopen = () => {
@@ -14,8 +15,12 @@ export function connectWS(url) {
             subscribers.forEach((handler) => handler(data))
         }
 
-        socket.onclose = () => {
-            console.log("Websocket closed")
+        socket.onclose = (event) => {
+            if (!event.wasClean) {
+                console.warn("Websocket closed unexpectedly", event)
+            } else {
+                console.log("Websocket closed")
+            }
             socket = null
         }
 
@@ -31,8 +36,15 @@ export function subscribeWS(handler) {
 
 export function unsubscribeWS(handler) {
     subscribers.delete(handler)
-    if (subscribers.size === 0 && socket) {
-        socket.close()
+
+    if (subscribers.size === 0 && socket && socket.readyState === WebSocket.OPEN) {
+        socketCloseTimeout = setTimeout(() => {
+            if (subscribers.size === 0) {
+                socket.close();
+                socket = null;
+            }
+        }, 300000)
+
     }
 }
 
