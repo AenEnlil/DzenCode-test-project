@@ -38,7 +38,7 @@
         </div>
         <div>
             <label>Attach file: </label>
-            <input type="file" accept=".txt" @change="handleFileUpload"/>
+            <input type="file"  ref="fileInput" accept=".txt" @change="handleFileUpload"/>
             <div v-if="errors.file">
                 <ul>
                     <li v-for="(error, index) in errors.file" :key="index"> {{error}} </li>
@@ -47,7 +47,7 @@
         </div>
         <div>
             <label>Attach image: </label>
-            <input type="file" accept="image/jpeg,image/png,image/gif" @change="handleImageUpload"/>
+            <input type="file" ref="imageInput" accept="image/jpeg,image/png,image/gif" @change="handleImageUpload"/>
             <div v-if="errors.image">
                 <ul>
                     <li v-for="(error, index) in errors.image" :key="index"> {{error}} </li>
@@ -163,6 +163,7 @@
             this.form.file = file
          } else {
             this.form.file = null
+            this.$refs.fileInput.value = ''
             this.updateErrors({errors: this.errors, field: 'file', data: 'Txt lower than 100KB only accepted'})
          }
         },
@@ -209,6 +210,7 @@
             if (!allowedTypes.includes(image.type)) {
               this.updateErrors({errors: this.errors, field: 'image', data: 'Only JPG, PNG, GIF allowed'})
               this.form.image = null
+              this.$refs.imageInput.value = ''
               return
             }
 
