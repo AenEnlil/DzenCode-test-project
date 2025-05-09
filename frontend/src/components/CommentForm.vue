@@ -36,6 +36,24 @@
                 </ul>
             </div>
         </div>
+        <div>
+            <label>Attach file: </label>
+            <input type="file" accept=".txt" @change="handleFileUpload"/>
+            <div v-if="errors.file">
+                <ul>
+                    <li v-for="(error, index) in errors.file" :key="index"> {{error}} </li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <label>Attach image: </label>
+            <input type="file" accept="image/jpeg,image/png,image/gif" @change="handleImageUpload"/>
+            <div v-if="errors.image">
+                <ul>
+                    <li v-for="(error, index) in errors.image" :key="index"> {{error}} </li>
+                </ul>
+            </div>
+        </div>
         <button class="form-button" type="submit"> Отправить </button>
         <button class="form-button cancel" type="button" @click="$emit('cancel')"> Отмена </button>
     </form>
@@ -45,7 +63,8 @@
     export default {
       name: 'CommentForm',
       props: {
-        onSubmit: Function
+        onSubmit: Function,
+        parent: Number
       },
       data() {
         return {
@@ -111,7 +130,17 @@
             }
             try {
                 if (this.onSubmit) {
-                    await this.onSubmit({...this.form})
+                    let payload
+                    if (this.parent) {this.form.parent = this.parent}
+                    if (this.form.file || this.form.image) {
+                        payload = new FormData()
+                        for (const key of Object.keys(this.form)) {
+                            payload.append(`${key}`, this.form[key])
+                        }
+                    } else {
+                        payload = {...this.form}
+                    }
+                    await this.onSubmit(payload)
                 }
                 this.clearForm()
             } catch (serverErrors) {
@@ -127,6 +156,20 @@
             text: ''
           }
         },
+        handleFileUpload(event) {
+         const file = event.target.files[0]
+
+         if (file && file.type === 'text/plain' && file.size <= 100 * 1024){
+            this.form.file = file
+         } else {
+            this.form.file = null
+            this.updateErrors({errors: this.errors, field: 'file', data: 'Txt lower than 100KB only accepted'})
+         }
+        },
+        handleImageUpload(event) {
+            const image = event.target.files[0]
+            this.form.image = image
+        }
       },
     }
 </script>

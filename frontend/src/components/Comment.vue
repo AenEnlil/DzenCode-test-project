@@ -38,7 +38,7 @@
     </div>
     <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
-            <CommentForm :onSubmit="createComment" @cancel="showModal = false"/>
+            <CommentForm :onSubmit="createComment" :parent="comment.id" @cancel="showModal = false"/>
         </div>
     </div>
 
@@ -134,8 +134,6 @@
             },
 
             async createComment(formData) {
-                formData.parent = this.comment.id
-
                 try {
                     const response = await axios.post(API_BASE_URL+'/comments/', formData)
                     this.showModal = false
