@@ -46,7 +46,8 @@
 
 <script>
     import axios from 'axios'
-    import { API_BASE_URL } from '@/config'
+    import { API_BASE_URL, WS_BASE_URL } from '@/config'
+    import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
     import { formatDate } from '@/service.js'
     import CommentForm from '@/components/CommentForm.vue'
     export default {
@@ -68,6 +69,12 @@
                 repliesVisible: true,
                 showModal: false,
             }
+        },
+        mounted() {
+            subscribeWS(this.handleWSMessage)
+        },
+        beforeUnmount() {
+            unsubscribeWS(this.handleWSMessage)
         },
         methods: {
             async loadReplies(query={}) {
@@ -100,6 +107,13 @@
 
             formatDate,
 
+            handleWSMessage(event_data) {
+                if (event_data.type == 'new_comment' && event_data.data.parent) {
+                    if (event_data.data.parent == this.comment.id) {
+                       this.addReplies({data: [event_data.data], toStart: true})
+                    }}
+            },
+
             checkIfHasMoreReplies(linkToNextPage) {
                 if (linkToNextPage) {
                     const parsedUrl = new URL(linkToNextPage);
@@ -124,7 +138,6 @@
 
                 try {
                     const response = await axios.post(API_BASE_URL+'/comments/', formData)
-                    this.addReplies({data: [response.data], toStart: true})
                     this.showModal = false
                 } catch (error) {
                     if (error.response && error.response.data) {
