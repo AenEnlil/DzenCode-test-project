@@ -58,8 +58,9 @@
 <script>
  import axios from 'axios'
  import { toRaw } from 'vue'
- import { API_BASE_URL, PAGE_SIZE } from '@/config'
+ import { API_BASE_URL, PAGE_SIZE, WS_BASE_URL } from '@/config'
  import { formatDate } from '@/service.js'
+ import { connectWS, subscribeWS, unsubscribeWS } from '@/services/websocket.js'
  import CommentForm from '@/components/CommentForm.vue'
  export default {
     name: 'CommentsTable',
@@ -82,7 +83,13 @@
     },
     mounted() {
         this.fetchComments()
+        connectWS(`${WS_BASE_URL}/ws/comments/`)
+        subscribeWS(this.handleWSMessage)
     },
+    beforeUnmount() {
+        unsubscribeWS(this.handleWSMessage)
+    },
+
     methods: {
         async fetchComments({ url=null, query={} } = {}) {
          var url = url ? url : API_BASE_URL+'/comments/'
@@ -100,6 +107,14 @@
 
         showModalWithForm() {
           this.showModal = true
+        },
+
+        handleWSMessage(event_data) {
+            if (event_data.type == "new_comment" && !event_data.data.parent) {
+                if (this.sortedBy == 'created_at' && this.sortOrder == 'desc' && !this.previous_page) {
+                    this.comments.unshift(event_data.data)
+                }
+            }
         },
 
         isTooLong(text, limit) {
