@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="comment-body">
-            <p> {{comment.text}} </p>
+            <p v-html='comment.text'></p>
         </div>
         <div v-if="repliesVisible">
             <div v-if="comment.replies && comment.replies.length" class="replies">
@@ -38,7 +38,7 @@
     </div>
     <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
-            <CommentForm :onSubmit="createComment" @cancel="showModal = false"/>
+            <CommentForm :onSubmit="createComment" :parent="comment.id" @cancel="showModal = false"/>
         </div>
     </div>
 
@@ -68,6 +68,8 @@
                 offsetQuery: {},
                 repliesVisible: true,
                 showModal: false,
+                offsetShift: 0,
+                haveNextPage: false
             }
         },
         mounted() {
@@ -79,6 +81,11 @@
         methods: {
             async loadReplies(query={}) {
                 this.loading = true
+                if (query.offset) {
+                    // adding offset shift for correct loading if any replies where added to page through Websocket
+                    query.offset += this.offsetShift
+                    this.offsetShift = 0
+                }
                 try {
                     const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
                                                      {params: query})
@@ -89,6 +96,11 @@
                     console.error('Error while loading replies')
                 } finally {
                     this.loading = false
+                }
+            },
+            updateOffsetShift() {
+                if (this.repliesLoaded && this.haveNextPage) {
+                    this.offsetShift += 1
                 }
             },
 
@@ -111,15 +123,19 @@
                 if (event_data.type == 'new_comment' && event_data.data.parent) {
                     if (event_data.data.parent == this.comment.id) {
                        this.addReplies({data: [event_data.data], toStart: true})
+                       // shift offset for pagination
+                       this.updateOffsetShift()
                     }}
             },
 
             checkIfHasMoreReplies(linkToNextPage) {
                 if (linkToNextPage) {
                     const parsedUrl = new URL(linkToNextPage);
-                    const offset_value = parsedUrl.searchParams.get('offset')
+                    const offset_value = Number(parsedUrl.searchParams.get('offset'))
                     this.offsetQuery = {offset: offset_value}
+                    this.haveNextPage = true
                 } else {
+                    this.haveNextPage = false
                     this.comment.has_replies = false
                 }
 
@@ -134,8 +150,6 @@
             },
 
             async createComment(formData) {
-                formData.parent = this.comment.id
-
                 try {
                     const response = await axios.post(API_BASE_URL+'/comments/', formData)
                     this.showModal = false
@@ -260,6 +274,10 @@
 
 .replies-button:hover {
   background-color: #6c7ae0;
+}
+
+strong {
+    font-weight: bold;
 }
 
 </style>
