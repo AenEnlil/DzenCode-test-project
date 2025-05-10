@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="comment-body">
-            <p> {{comment.text}} </p>
+            <p v-html='comment.text'></p>
         </div>
         <div v-if="repliesVisible">
             <div v-if="comment.replies && comment.replies.length" class="replies">
@@ -258,6 +258,10 @@
 
 .replies-button:hover {
   background-color: #6c7ae0;
+}
+
+strong {
+    font-weight: bold;
 }
 
 </style>
