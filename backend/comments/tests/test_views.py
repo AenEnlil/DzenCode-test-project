@@ -3,7 +3,10 @@ from typing import List
 
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
+from django.test import override_settings
 from ..models import Comment
+
+caches = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache", }}
 
 
 class CommentsTestDataMixin:
@@ -32,6 +35,7 @@ class CommentsTestDataMixin:
         return cls.model.objects.filter(parent=None)
 
 
+@override_settings(CACHES=caches)
 class CommentTests(APITestCase, CommentsTestDataMixin):
     comment_create_data = {}
 

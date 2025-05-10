@@ -6,6 +6,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from .models import Comment
 from .serializers import CommentSerializer, CommentDetailsSerializer
@@ -65,6 +67,10 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         except Exception as e:
             pass
 
+    @method_decorator(cache_page(5))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, kwargs)
+
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -73,12 +79,14 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         self.notify_consumers(method='comment_created', group='comments', data=data)
         return Response(data)
 
+    @method_decorator(cache_page(60 * 5))
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.has_replies = Comment.objects.filter(parent=instance.id).exists()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @method_decorator(cache_page(5))
     @action(methods=['get'], detail=False, url_path='(?P<pk>[0-9]+)/replies')
     def get_replies(self, request, *args, **kwargs):
         # check if replies has nested replies
