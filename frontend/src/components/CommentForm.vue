@@ -380,10 +380,18 @@ label {
     font-weight: 500;
 }
 
-canvas {
+.captcha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+img {
     border: 1px solid #ccc;
     cursor: pointer;
     margin-bottom: 5px;
+    width: 150px;
+    height: 50px;
 }
 
 </style>
