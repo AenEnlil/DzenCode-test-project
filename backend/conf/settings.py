@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+REDIS_HOST, REDIS_PORT = os.getenv('REDIS_HOST'), os.getenv('REDIS_PORT', 6379)
 
 # Application definition
 
@@ -82,7 +83,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT, 0)],
         },
     },
 }
@@ -156,4 +157,12 @@ CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:8000']
 
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = 'uploads/'
+
+# CACHE settings
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+    }
+}
 
