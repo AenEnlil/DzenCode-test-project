@@ -28,8 +28,14 @@
             </div>
         </div>
         <div>
+            <div class="formatting-buttons">
+                <button @click.prevent="wrapSelection('i')"><i>i</i></button>
+                <button @click.prevent="wrapSelection('strong')"><strong>B</strong></button>
+                <button @click.prevent="wrapSelection('a', 'href=# title=')"><a>a</a></button>
+                <button @click.prevent="wrapSelection('code')"><code>code</code></button>
+            </div>
             <label>Text </label>
-            <input type="text" v-model="form.text" required />
+            <input type="text" ref="textInput" v-model="form.text" required />
             <div v-if="errors.text">
                 <ul>
                     <li v-for="(error, index) in errors.text" :key="index"> {{error}} </li>
@@ -84,6 +90,24 @@
             } else {
                 errors[field].push(data)
             }
+        },
+        wrapSelection(tag, attrs='') {
+            const input = this.$refs.textInput
+            const start = input.selectionStart
+            const end = input.selectionEnd
+            const selected = this.form.text.slice(start, end)
+            const openTag = `<${tag}${attrs?' ' + attrs : ''}>`
+            const closeTag = `</${tag}>`
+
+            let currentText = input.value
+            let newText
+            if (selected) {
+                newText = currentText.slice(0, start) + openTag + selected + closeTag + currentText.slice(end)
+            } else {
+                newText = currentText + openTag + closeTag
+            }
+            input.value = newText
+            this.form.text = newText
         },
 
         validate() {
