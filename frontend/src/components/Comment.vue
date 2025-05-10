@@ -1,5 +1,5 @@
 <template>
-    <div v-if="loading">Loading...</div>
+    <div v-if="loading"><Loader /></div>
     <div v-else class="comment">
         <div class="comment-header">
             <p>{{comment.id}}</p>
@@ -50,6 +50,7 @@
     import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
     import { formatDate } from '@/service.js'
     import CommentForm from '@/components/CommentForm.vue'
+    import Loader from '@/components/Loader.vue'
     export default {
         name: 'Comment',
         props: {
@@ -59,7 +60,8 @@
             }
         },
         components: {
-            CommentForm
+            CommentForm,
+            Loader
         },
         data() {
             return {

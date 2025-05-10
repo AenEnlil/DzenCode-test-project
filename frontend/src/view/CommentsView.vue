@@ -1,6 +1,6 @@
 <template>
  <div>
-  <div v-if="loading">Loading...</div>
+  <div v-if="loading"><Loader /></div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
    <div v-if="comments_count === 0">
@@ -62,10 +62,12 @@
  import { formatDate } from '@/service.js'
  import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
  import CommentForm from '@/components/CommentForm.vue'
+ import Loader from '@/components/Loader.vue'
  export default {
     name: 'CommentsTable',
     components: {
-     CommentForm
+     CommentForm,
+     Loader
     },
     data() {
         return {
