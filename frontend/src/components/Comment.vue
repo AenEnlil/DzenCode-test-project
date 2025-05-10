@@ -68,6 +68,8 @@
                 offsetQuery: {},
                 repliesVisible: true,
                 showModal: false,
+                offsetShift: 0,
+                haveNextPage: false
             }
         },
         mounted() {
@@ -79,6 +81,11 @@
         methods: {
             async loadReplies(query={}) {
                 this.loading = true
+                if (query.offset) {
+                    // adding offset shift for correct loading if any replies where added to page through Websocket
+                    query.offset += this.offsetShift
+                    this.offsetShift = 0
+                }
                 try {
                     const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
                                                      {params: query})
@@ -89,6 +96,11 @@
                     console.error('Error while loading replies')
                 } finally {
                     this.loading = false
+                }
+            },
+            updateOffsetShift() {
+                if (this.repliesLoaded && this.haveNextPage) {
+                    this.offsetShift += 1
                 }
             },
 
@@ -111,15 +123,19 @@
                 if (event_data.type == 'new_comment' && event_data.data.parent) {
                     if (event_data.data.parent == this.comment.id) {
                        this.addReplies({data: [event_data.data], toStart: true})
+                       // shift offset for pagination
+                       this.updateOffsetShift()
                     }}
             },
 
             checkIfHasMoreReplies(linkToNextPage) {
                 if (linkToNextPage) {
                     const parsedUrl = new URL(linkToNextPage);
-                    const offset_value = parsedUrl.searchParams.get('offset')
+                    const offset_value = Number(parsedUrl.searchParams.get('offset'))
                     this.offsetQuery = {offset: offset_value}
+                    this.haveNextPage = true
                 } else {
+                    this.haveNextPage = false
                     this.comment.has_replies = false
                 }
 
