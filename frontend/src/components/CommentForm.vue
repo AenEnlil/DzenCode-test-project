@@ -60,6 +60,16 @@
                 </ul>
             </div>
         </div>
+        <div class="captcha">
+            <img :src="captchaImageSrc" @click="generateCaptcha" alt="captcha"></img>
+            <canvas ref="canvas" width="150" height="50" style="display: none"></canvas>
+            <input v-model="captchaInput" placeholder="Input captcha: " />
+            <div v-if="errors.captcha">
+                <ul>
+                    <li v-for="(error, index) in errors.captcha" :key="index"> {{error}} </li>
+                </ul>
+            </div>
+        </div>
         <button class="form-button" type="submit"> Отправить </button>
         <button class="form-button cancel" type="button" @click="$emit('cancel')"> Отмена </button>
     </form>
@@ -80,8 +90,13 @@
             homepage: '',
             text: ''
           },
-          errors: {}
+          errors: {},
+          captchaInput: null,
+          captchaImageSrc: null
         }
+      },
+      mounted() {
+        this.generateCaptcha()
       },
       methods: {
         updateErrors({errors, field, data}) {
@@ -91,6 +106,57 @@
                 errors[field].push(data)
             }
         },
+        generateCaptcha() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789'
+            this.captchaCode = ''
+            for (let i=0; i < 6; i++) {
+                this.captchaCode += chars[Math.floor(Math.random() * chars.length)]
+            }
+
+            const canvas = this.$refs.canvas
+            const ctx = canvas.getContext('2d')
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            // background
+            ctx.fillStyle = '#f2f2f2'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+            for (let i = 0; i < 5; i++) {
+                ctx.strokeStyle = this.getRandomColor()
+                ctx.beginPath()
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
+                ctx.stroke()
+            }
+
+            for (let i = 0; i < 30; i++) {
+                ctx.fillStyle = this.getRandomColor()
+                ctx.beginPath()
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 0, 2*Math.PI)
+                ctx.fill()
+            }
+
+
+            ctx.font = '28px sans-serif'
+            ctx.fillStyle = '#333'
+            ctx.fillText(this.captchaCode, 10, 35)
+
+            this.captchaImageSrc = canvas.toDataURL('image/png')
+        },
+        getRandomColor() {
+            const r = Math.floor(Math.random() * 150)
+            const g = Math.floor(Math.random() * 150)
+            const b = Math.floor(Math.random() * 150)
+            return `rgb(${r},${g},${b})`
+        },
+        checkCaptcha() {
+            if (!this.captchaInput) {return false}
+            const trimmed = this.captchaInput.trim().toUpperCase()
+            if (trimmed.length === this.captchaCode.length) {
+                return trimmed === this.captchaCode
+            } else { return false}
+        },
+
         wrapSelection(tag, attrs='') {
             const input = this.$refs.textInput
             const start = input.selectionStart
@@ -112,6 +178,11 @@
 
         validate() {
             const errors = {}
+
+            if (!this.checkCaptcha()) {
+                this.updateErrors({errors: errors, field: 'captcha', data: 'Captcha incorrect'})
+                this.generateCaptcha()
+            }
 
             if (this.form.text) {
                 if (this.form.text.length > 1500) {
@@ -307,6 +378,12 @@ li {
 
 label {
     font-weight: 500;
+}
+
+canvas {
+    border: 1px solid #ccc;
+    cursor: pointer;
+    margin-bottom: 5px;
 }
 
 </style>
