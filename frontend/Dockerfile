@@ -2,6 +2,10 @@ FROM node:22.15.0-alpine as build-stage
 
 WORKDIR /app
 COPY . .
+
+ARG VITE_BACKEND_API_URL
+ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
+
 RUN npm install
 RUN npm run build
 
