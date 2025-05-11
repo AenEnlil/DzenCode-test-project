@@ -72,7 +72,7 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         return super().list(request, *args, kwargs)
 
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         data = serializer.data

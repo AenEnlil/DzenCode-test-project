@@ -27,7 +27,8 @@
         <div class="comment-body">
             <p v-html='comment.text'></p>
             <div class="files" v-if="comment.image || comment.file">
-                <img v-if="comment.image" :src="comment.image" alt="" class='thumb' @click="openPreview(comment.image)"></img>
+                <div v-if="!imageLoaded" class="image-placeholder"> Loading...</div>
+                    <img v-show="imageLoaded" :src="comment.image" alt="preview" class='thumb' @load="onImageLoad" @error="onImageError" @click="openPreview(comment.image)"></img>
                 <div v-if="comment.file" class="file-preview" alt="" @click="openPreview(comment.file)">📎 {{ getFileName(comment.file) }}</div>
             </div>
             <FilePreviewModal :visible="showFileModal" :file="currentFileUrl" @close="closeFileModal" />
@@ -80,7 +81,8 @@
                 offsetShift: 0,
                 haveNextPage: false,
                 showFileModal: false,
-                currentFileUrl: null
+                currentFileUrl: null,
+                imageLoaded: false
             }
         },
         mounted() {
@@ -88,6 +90,10 @@
         },
         beforeUnmount() {
             unsubscribeWS(this.handleWSMessage)
+        },
+        watch: {
+            'comment.image'(newVal) {
+                this.imageLoaded = false }
         },
         methods: {
             async loadReplies(query={}) {
@@ -141,6 +147,12 @@
             },
             getFileName(url) {
                 return url.split('/').pop()
+            },
+            onImageLoad() {
+                this.imageLoaded = true
+            },
+            onImageError() {
+                this.imageLoaded = false
             },
 
             handleWSMessage(event_data) {
