@@ -1,11 +1,12 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from .serializers import CommentSerializer
+from .serializers import CommentWebsocketSerializer
 
 
 def notify_consumers(comment, method, group):
-    serialized_data = CommentSerializer(comment).data
+    # using separate serializer to build absolute url for image and file
+    serialized_data = CommentWebsocketSerializer(comment).data
     try:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

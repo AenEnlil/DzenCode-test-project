@@ -77,6 +77,8 @@ TEMPLATES = [
     },
 ]
 
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+
 WSGI_APPLICATION = 'conf.wsgi.application'
 ASGI_APPLICATION = 'conf.asgi.application'
 CHANNEL_LAYERS = {
