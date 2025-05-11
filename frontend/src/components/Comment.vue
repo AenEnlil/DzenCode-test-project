@@ -26,6 +26,11 @@
         </div>
         <div class="comment-body">
             <p v-html='comment.text'></p>
+            <div class="files" v-if="comment.image || comment.file">
+                <img v-if="comment.image" :src="comment.image" alt="" class='thumb' @click="openPreview(comment.image)"></img>
+                <div v-if="comment.file" class="file-preview" alt="" @click="openPreview(comment.file)">📎 {{ getFileName(comment.file) }}</div>
+            </div>
+            <FilePreviewModal :visible="showFileModal" :file="currentFileUrl" @close="closeFileModal" />
         </div>
         <div v-if="repliesVisible">
             <div v-if="comment.replies && comment.replies.length" class="replies">
@@ -51,6 +56,7 @@
     import { formatDate } from '@/service.js'
     import CommentForm from '@/components/CommentForm.vue'
     import Loader from '@/components/Loader.vue'
+    import FilePreviewModal from '@/components/FilePreviewModal.vue'
     export default {
         name: 'Comment',
         props: {
@@ -61,7 +67,8 @@
         },
         components: {
             CommentForm,
-            Loader
+            Loader,
+            FilePreviewModal
         },
         data() {
             return {
@@ -71,7 +78,9 @@
                 repliesVisible: true,
                 showModal: false,
                 offsetShift: 0,
-                haveNextPage: false
+                haveNextPage: false,
+                showFileModal: false,
+                currentFileUrl: null
             }
         },
         mounted() {
@@ -120,6 +129,19 @@
             },
 
             formatDate,
+
+            openPreview(url) {
+                this.showFileModal = true
+                this.currentFileUrl = url
+            },
+
+            closeFileModal() {
+                this.showFileModal = false
+                this.currentFileUrl = null
+            },
+            getFileName(url) {
+                return url.split('/').pop()
+            },
 
             handleWSMessage(event_data) {
                 if (event_data.type == 'new_comment' && event_data.data.parent) {
@@ -280,6 +302,19 @@
 
 strong {
     font-weight: bold;
+}
+
+.thumb {
+  max-width: 150px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.file-preview {
+  margin-top: 0.5rem;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
 }
 
 </style>
