@@ -65,6 +65,15 @@ services:
     depends_on:
       - backend-app
       - redis
+  frontend-app:
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend-app
 
 
 
