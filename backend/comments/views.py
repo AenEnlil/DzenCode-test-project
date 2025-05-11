@@ -79,7 +79,7 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         self.notify_consumers(method='comment_created', group='comments', data=data)
         return Response(data)
 
-    @method_decorator(cache_page(60 * 5))
+    @method_decorator(cache_page(10))
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.has_replies = Comment.objects.filter(parent=instance.id).exists()
