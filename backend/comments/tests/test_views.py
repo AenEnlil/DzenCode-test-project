@@ -35,7 +35,7 @@ class CommentsTestDataMixin:
         return cls.model.objects.filter(parent=None)
 
 
-@override_settings(CACHES=caches)
+@override_settings(CACHES=caches, CELERY_TASK_ALWAYS_EAGER=True)
 class CommentTests(APITestCase, CommentsTestDataMixin):
     comment_create_data = {}
 

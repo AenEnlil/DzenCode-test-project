@@ -54,19 +54,6 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
             queryset = queryset.filter(parent_id=self.kwargs.get('pk'))
         return queryset
 
-    def notify_consumers(self, method: str, group: str, data: str):
-        try:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                group,
-                {
-                    "type": method,
-                    "data": data
-                }
-            )
-        except Exception as e:
-            pass
-
     @method_decorator(cache_page(5))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, kwargs)
@@ -76,7 +63,6 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         data = serializer.data
-        self.notify_consumers(method='comment_created', group='comments', data=data)
         return Response(data)
 
     @method_decorator(cache_page(60 * 5))

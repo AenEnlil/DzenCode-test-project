@@ -166,3 +166,5 @@ CACHES = {
     }
 }
 
+# CELERY settings
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
