@@ -72,14 +72,14 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
         return super().list(request, *args, kwargs)
 
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         data = serializer.data
         self.notify_consumers(method='comment_created', group='comments', data=data)
         return Response(data)
 
-    @method_decorator(cache_page(60 * 5))
+    @method_decorator(cache_page(10))
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.has_replies = Comment.objects.filter(parent=instance.id).exists()

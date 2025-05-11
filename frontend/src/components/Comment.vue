@@ -1,5 +1,5 @@
 <template>
-    <div v-if="loading">Loading...</div>
+    <div v-if="loading"><Loader /></div>
     <div v-else class="comment">
         <div class="comment-header">
             <p>{{comment.id}}</p>
@@ -26,6 +26,12 @@
         </div>
         <div class="comment-body">
             <p v-html='comment.text'></p>
+            <div class="files" v-if="comment.image || comment.file">
+                <div v-if="!imageLoaded" class="image-placeholder"> Loading...</div>
+                    <img v-show="imageLoaded" :src="comment.image" alt="preview" class='thumb' @load="onImageLoad" @error="onImageError" @click="openPreview(comment.image)"></img>
+                <div v-if="comment.file" class="file-preview" alt="" @click="openPreview(comment.file)">📎 {{ getFileName(comment.file) }}</div>
+            </div>
+            <FilePreviewModal :visible="showFileModal" :file="currentFileUrl" @close="closeFileModal" />
         </div>
         <div v-if="repliesVisible">
             <div v-if="comment.replies && comment.replies.length" class="replies">
@@ -50,6 +56,8 @@
     import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
     import { formatDate } from '@/service.js'
     import CommentForm from '@/components/CommentForm.vue'
+    import Loader from '@/components/Loader.vue'
+    import FilePreviewModal from '@/components/FilePreviewModal.vue'
     export default {
         name: 'Comment',
         props: {
@@ -59,7 +67,9 @@
             }
         },
         components: {
-            CommentForm
+            CommentForm,
+            Loader,
+            FilePreviewModal
         },
         data() {
             return {
@@ -69,7 +79,10 @@
                 repliesVisible: true,
                 showModal: false,
                 offsetShift: 0,
-                haveNextPage: false
+                haveNextPage: false,
+                showFileModal: false,
+                currentFileUrl: null,
+                imageLoaded: false
             }
         },
         mounted() {
@@ -77,6 +90,10 @@
         },
         beforeUnmount() {
             unsubscribeWS(this.handleWSMessage)
+        },
+        watch: {
+            'comment.image'(newVal) {
+                this.imageLoaded = false }
         },
         methods: {
             async loadReplies(query={}) {
@@ -118,6 +135,25 @@
             },
 
             formatDate,
+
+            openPreview(url) {
+                this.showFileModal = true
+                this.currentFileUrl = url
+            },
+
+            closeFileModal() {
+                this.showFileModal = false
+                this.currentFileUrl = null
+            },
+            getFileName(url) {
+                return url.split('/').pop()
+            },
+            onImageLoad() {
+                this.imageLoaded = true
+            },
+            onImageError() {
+                this.imageLoaded = false
+            },
 
             handleWSMessage(event_data) {
                 if (event_data.type == 'new_comment' && event_data.data.parent) {
@@ -278,6 +314,19 @@
 
 strong {
     font-weight: bold;
+}
+
+.thumb {
+  max-width: 150px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.file-preview {
+  margin-top: 0.5rem;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
 }
 
 </style>
