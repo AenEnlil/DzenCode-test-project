@@ -1,1 +1,16 @@
 .env
+
+__pycache__/
+*.pyc
+*pyo
+
+venv
+env
+.venv
+
+.git
+.gitignore
+
+.vscode
+
+uploads
