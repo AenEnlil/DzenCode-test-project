@@ -52,6 +52,7 @@
 
 <script>
     import axios from 'axios'
+    import api from '@/services/api.js'
     import { API_BASE_URL, WS_BASE_URL } from '@/config'
     import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
     import { formatDate } from '@/service.js'
@@ -104,7 +105,7 @@
                     this.offsetShift = 0
                 }
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/comments/${this.comment.id}/replies`,
+                    const response = await api.get(`/comments/${this.comment.id}/replies`,
                                                      {params: query})
                     this.addReplies({data: response.data.results})
                     this.checkIfHasMoreReplies(response.data.next)
@@ -187,7 +188,7 @@
 
             async createComment(formData) {
                 try {
-                    const response = await axios.post(API_BASE_URL+'/comments/', formData)
+                    const response = await api.post('/comments/', formData)
                     this.showModal = false
                 } catch (error) {
                     if (error.response && error.response.data) {

@@ -61,6 +61,7 @@
 
 <script>
  import axios from 'axios'
+ import api from '@/services/api.js'
  import { toRaw } from 'vue'
  import { API_BASE_URL, PAGE_SIZE, WS_BASE_URL } from '@/config'
  import { formatDate } from '@/service.js'
@@ -99,10 +100,10 @@
 
     methods: {
         async fetchComments({ url=null, query={} } = {}) {
-         var url = url ? url : API_BASE_URL+'/comments/'
+         var url = url ? url : '/comments/'
 
          try {
-          const response = await axios.get(url, {params: query})
+          const response = await api.get(url, {params: query})
           this.comments = response.data.results
           this.comments_count = response.data.count
           this.next_page = response.data.next
@@ -191,7 +192,7 @@
           formData.parent = null
 
           try {
-            await axios.post(API_BASE_URL+'/comments/', formData)
+            await api.post('/comments/', formData)
             this.showModal = false
           } catch (error) {
             if (error.response && error.response.data) {
