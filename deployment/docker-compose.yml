@@ -72,6 +72,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_BACKEND_API_URL: '/api/v1'
+        VITE_WS_BASE_URL: '/ws'
     ports:
       - "8080:80"
     depends_on:
