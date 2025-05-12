@@ -43,6 +43,8 @@ services:
     build:
       context: ../backend
       dockerfile: 'Dockerfile'
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       database:
         condition: service_healthy
@@ -77,8 +79,11 @@ services:
       - "8080:80"
     depends_on:
       - backend-app
+    volumes:
+      - uploads_data:/app/uploads
 
 
 
 volumes:
   redis-data:
+  uploads_data:

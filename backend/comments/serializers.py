@@ -19,11 +19,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return value
 
 
-class CommentDetailsSerializer(CommentSerializer):
-    has_replies = serializers.BooleanField()
-
-
-class CommentWebsocketSerializer(CommentSerializer):
+class CommentFilesUrlSerializer(CommentSerializer):
     image = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
 
@@ -41,3 +37,10 @@ class CommentWebsocketSerializer(CommentSerializer):
             return f'{settings.BASE_URL}{obj.file.url}'
         return None
 
+
+class CommentDetailsSerializer(CommentFilesUrlSerializer):
+    has_replies = serializers.BooleanField()
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
