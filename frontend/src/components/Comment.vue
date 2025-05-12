@@ -316,17 +316,33 @@ strong {
     font-weight: bold;
 }
 
+.files {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .thumb {
+  max-height: 50px;
   max-width: 150px;
   cursor: pointer;
   margin-top: 0.5rem;
+  vertical-align: middle;
 }
 
 .file-preview {
+  vertical-align: middle;
   margin-top: 0.5rem;
   cursor: pointer;
   color: #007bff;
   text-decoration: underline;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.thumb:hover, .file-preview:hover {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 </style>
