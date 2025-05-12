@@ -1,5 +1,3 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.db.models import Exists, OuterRef
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -9,6 +7,8 @@ from rest_framework.viewsets import GenericViewSet
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
+from jwt_auth.permissions import IsGuest
+from jwt_auth.authentication_classes import CustomJWTAuthentication
 from .models import Comment
 from .serializers import CommentSerializer, CommentDetailsSerializer
 from .paginators import CommentsListPaginator, RepliesPaginator
@@ -22,6 +22,8 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
     ordering_fields = ['email', 'username', 'created_at']
     ordering = ['-created_at']
     pagination_classes = {'list': CommentsListPaginator, 'get_replies': RepliesPaginator}
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsGuest]
 
     def get_pagination_class(self):
         return self.pagination_classes.get(self.action, None)

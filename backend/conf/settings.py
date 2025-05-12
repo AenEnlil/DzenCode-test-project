@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'comments',
+    'jwt_auth',
 ]
 
 MIDDLEWARE = [
@@ -170,3 +172,15 @@ CACHES = {
 
 # CELERY settings
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
+
+# REST FRAMEWORK setting
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': []
+}
+
+# JWT settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': os.getenv('ACCESS_TOKEN_LIFETIME', timedelta(minutes=5)),
+    'REFRESH_TOKEN_LIFETIME': os.getenv('REFRESH_TOKEN_LIFETIME', timedelta(days=1))
+}
+
