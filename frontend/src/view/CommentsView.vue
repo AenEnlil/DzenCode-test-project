@@ -36,6 +36,10 @@
         </tr>
       </tbody>
   </table>
+     <div v-if="showNewCommentNotification" class="notification">
+            Новый комментарий доступен({{newCommentsCount}})
+        <button @click="reloadTable">Обновить</button>
+     </div>
      <div class="buttons">
          <div class="pagination">
        <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
@@ -81,6 +85,8 @@
             comments_count: null,
             currentPage: 1,
             showModal: false,
+            showNewCommentNotification: false,
+            newCommentsCount: 0
         }
     },
     mounted() {
@@ -114,8 +120,17 @@
             if (event_data.type == "new_comment" && !event_data.data.parent) {
                 if (this.sortedBy == 'created_at' && this.sortOrder == 'desc' && !this.previous_page) {
                     this.comments.unshift(event_data.data)
+                } else {
+                    this.showNewCommentNotification = true
+                    this.newCommentsCount += 1
                 }
             }
+        },
+        reloadTable() {
+            this.showNewCommentNotification = false
+            this.newCommentsCount = 0
+            var params = this.getSortParams()
+            this.fetchComments({ query: params })
         },
 
         isTooLong(text, limit) {
@@ -178,7 +193,6 @@
           try {
             await axios.post(API_BASE_URL+'/comments/', formData)
             this.showModal = false
-            window.location.reload()
           } catch (error) {
             if (error.response && error.response.data) {
               return Promise.reject(error.response.data)
