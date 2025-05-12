@@ -1,9 +1,10 @@
-import random
+import uuid
 from typing import List
 
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from django.test import override_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import Comment
 
 caches = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache", }}
@@ -45,6 +46,13 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
 
         cls.comment_with_answers = comments[0]
         cls.create_answers_for_comment(comments[0], answer_quantity=20)
+
+    def setUp(self):
+        token = RefreshToken()
+        token['guest_id'] = str(uuid.uuid4())
+        token['guest'] = True
+        access_token = token.access_token
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
 
     def test_list_paginated(self):
         url = reverse('comment-list')
@@ -309,3 +317,25 @@ class CommentTests(APITestCase, CommentsTestDataMixin):
         self.assertFalse(response_data.get('results'))
 
 
+class CommentUnauthenticatedTests(APITestCase):
+
+    def test_unauthenticated_user_cant_get_list(self):
+        url = reverse('comment-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_unauthenticated_user_cant_create_comment(self):
+        data = {'email': 'test_case@gmail.com', 'username': 'testuser', 'text': 'test text'}
+        url = reverse('comment-list')
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 401)
+
+    def test_unauthenticated_user_cant_retrieve_comment(self):
+        url = reverse('comment-detail', kwargs={'pk': 999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_unauthenticated_user_cant_get_replies(self):
+        url = reverse('comment-get-replies', kwargs={'pk': 999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)

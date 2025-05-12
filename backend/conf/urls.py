@@ -4,6 +4,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('api/v1/comments/', include('comments.urls')),
+    path('api/v1/tokens/', include('jwt_auth.urls')),
 ]
 
 if settings.DEBUG:

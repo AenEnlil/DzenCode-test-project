@@ -10,6 +10,7 @@
 
 <script>
     import axios from 'axios'
+    import api from '@/services/api.js'
     import { API_BASE_URL } from '@/config'
     import Comment from '@/components/Comment.vue'
     import Loader from '@/components/Loader.vue'
@@ -32,7 +33,7 @@
                 this.loading = true
                 const id = this.$route.params.id
                 try {
-                    const commentRes = await axios.get(`${API_BASE_URL}/comments/${id}`)
+                    const commentRes = await api.get(`/comments/${id}`)
                     this.comment = commentRes.data
                 } catch (error) {
                     console.error(error)
