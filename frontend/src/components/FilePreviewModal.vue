@@ -58,18 +58,39 @@ export default {
     max-height: 90%;
     overflow: auto;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 .modal-content img {
     max-width: 100%;
     height: auto;
 }
 .close-button {
-    margin-top: 15px;
-    padding: 8px 12px;
-    background: #555;
-    color: white;
-    border: none;
-    cursor: pointer
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.close-button:hover {
+   background-color: #6c7ae0;
 }
 
 </style>

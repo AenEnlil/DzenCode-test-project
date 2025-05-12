@@ -394,4 +394,9 @@ img {
     height: 50px;
 }
 
+.formatting-buttons {
+    display: flex;
+    gap: 7px;
+}
+
 </style>

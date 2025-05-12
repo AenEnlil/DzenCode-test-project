@@ -36,18 +36,18 @@
         </tr>
       </tbody>
   </table>
-     <div v-if="showNewCommentNotification" class="notification">
-            Новый комментарий доступен({{newCommentsCount}})
-        <button @click="reloadTable">Обновить</button>
-     </div>
      <div class="buttons">
          <div class="pagination">
-       <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
-       <button :disabled="!next_page" @click="goToNextPage"> Next</button>
-     </div>
+            <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
+            <button :disabled="!next_page" @click="goToNextPage"> Next</button>
+         </div>
+         <div v-if="showNewCommentNotification" class="notification">
+            New comment available ({{newCommentsCount}})
+            <button @click="reloadTable">Обновить</button>
+        </div>
          <div class="create-comment-button">
-      <button @click="showModalWithForm">Create comment</button>
-     </div>
+            <button @click="showModalWithForm">Create comment</button>
+         </div>
      </div>
    </div>
   </div>
@@ -369,6 +369,16 @@ button:hover {
 
 .no-comments-text{
     margin-bottom: 10px;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-transform: uppercase;
+    font-family: 'Montserrat';
+    font-weight: 600;
 }
 
 </style>

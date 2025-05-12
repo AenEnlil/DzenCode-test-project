@@ -208,9 +208,8 @@
     .comment {
         width: 1000px;
         border-left: 2px solid #ddd;
-        margin-left: 1rem;
         padding-left: 1rem;
-        margin-top: 1rem;
+        margin: 0 auto;
     }
 
      p {
@@ -223,6 +222,7 @@
     }
 
     .comment-header {
+        margin-top: 15px;
         padding-left: 10px;
         background: #bfc7ff;
         height: 60px;
@@ -302,7 +302,6 @@
   font-weight: 600;
   line-height: 20px;
   padding: 6px 16px;
-  position: relative;
   text-align: center;
   text-decoration: none;
   vertical-align: middle;
@@ -319,7 +318,7 @@ strong {
 
 .files {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 8px;
 }
 
@@ -328,15 +327,12 @@ strong {
   max-width: 150px;
   cursor: pointer;
   margin-top: 0.5rem;
-  vertical-align: middle;
 }
 
 .file-preview {
-  vertical-align: middle;
   margin-top: 0.5rem;
   cursor: pointer;
   color: #007bff;
-  text-decoration: underline;
   display: inline-block;
   max-width: 100%;
 }

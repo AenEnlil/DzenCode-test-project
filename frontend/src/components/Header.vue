@@ -1,6 +1,6 @@
 <template>
     <header class="site-header">
-        <h1>Header</h1>
+        <h1>Test Project</h1>
     </header>
 </template>
 
@@ -16,8 +16,7 @@ export default {
     background-color: #333;
     color: white;
     padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    text-align: center;
+    font-family: 'Montserrat';
 }
 </style>
