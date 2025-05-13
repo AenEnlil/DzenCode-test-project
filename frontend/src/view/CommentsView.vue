@@ -3,7 +3,7 @@
   <div v-if="loading"><Loader /></div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
-   <div v-if="comments_count === 0">
+   <div v-if="comments_count === 0" class='no-comments'>
     <p class="no-comments-text">there is no comments yet, but you can...</p>
     <div class="create-comment-button">
       <button @click="showModalWithForm">Create comment</button>
@@ -373,6 +373,15 @@ button:hover {
     text-transform: uppercase;
     font-family: 'Montserrat';
     font-weight: 600;
+}
+
+.no-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
 }
 
 </style>
