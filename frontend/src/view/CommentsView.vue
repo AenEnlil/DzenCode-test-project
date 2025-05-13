@@ -43,7 +43,7 @@
          </div>
          <div v-if="showNewCommentNotification" class="notification">
             New comment available ({{newCommentsCount}})
-            <button @click="reloadTable">Обновить</button>
+            <button @click="reloadTable">Refresh</button>
         </div>
          <div class="create-comment-button">
             <button @click="showModalWithForm">Create comment</button>
@@ -127,9 +127,13 @@
                 }
             }
         },
-        reloadTable() {
+        resetNewCommentsCountAndNotification() {
             this.showNewCommentNotification = false
             this.newCommentsCount = 0
+        },
+
+        reloadTable() {
+            this.resetNewCommentsCountAndNotification()
             var params = this.getSortParams()
             this.fetchComments({ query: params })
         },
@@ -169,6 +173,7 @@
           this.sortOrder = 'asc' }
          var params = this.getSortParams()
          this.fetchComments({ query: params })
+         this.resetNewCommentsCountAndNotification()
         },
 
         loadPage(page_number) {
@@ -179,12 +184,14 @@
         goToNextPage() {
          if (this.next_page) {
           this.fetchComments({url: this.next_page})
+          this.resetNewCommentsCountAndNotification()
          }
         },
 
         goToPreviousPage() {
          if (this.previous_page) {
           this.fetchComments({url: this.previous_page})
+          this.resetNewCommentsCountAndNotification()
          }
         },
 
