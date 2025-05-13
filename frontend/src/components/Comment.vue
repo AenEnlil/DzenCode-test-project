@@ -51,11 +51,10 @@
 </template>
 
 <script>
-    import axios from 'axios'
     import api from '@/services/api.js'
-    import { API_BASE_URL, WS_BASE_URL } from '@/config'
+    import { WS_BASE_URL } from '@/config'
     import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
-    import { formatDate } from '@/service.js'
+    import { formatDate } from '@/services/utils.js'
     import CommentForm from '@/components/CommentForm.vue'
     import Loader from '@/components/Loader.vue'
     import FilePreviewModal from '@/components/FilePreviewModal.vue'

@@ -9,9 +9,7 @@
 </template>
 
 <script>
-    import axios from 'axios'
     import api from '@/services/api.js'
-    import { API_BASE_URL } from '@/config'
     import Comment from '@/components/Comment.vue'
     import Loader from '@/components/Loader.vue'
     export default {

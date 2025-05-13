@@ -60,11 +60,9 @@
 </template>
 
 <script>
- import axios from 'axios'
  import api from '@/services/api.js'
- import { toRaw } from 'vue'
- import { API_BASE_URL, PAGE_SIZE, WS_BASE_URL } from '@/config'
- import { formatDate } from '@/service.js'
+ import { PAGE_SIZE, WS_BASE_URL } from '@/config'
+ import { formatDate } from '@/services/utils.js'
  import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
  import CommentForm from '@/components/CommentForm.vue'
  import Loader from '@/components/Loader.vue'
@@ -84,7 +82,6 @@
             next_page: null,
             previous_page: null,
             comments_count: null,
-            currentPage: 1,
             showModal: false,
             showNewCommentNotification: false,
             newCommentsCount: 0
@@ -176,11 +173,6 @@
          this.resetNewCommentsCountAndNotification()
         },
 
-        loadPage(page_number) {
-         this.currentPage = page_number
-         console.log(page_number, this.currentPage)
-        },
-
         goToNextPage() {
          if (this.next_page) {
           this.fetchComments({url: this.next_page})
@@ -214,12 +206,7 @@
         },
 
     },
-    computed: {
-     totalPages() {
-      return Math.ceil(this.comments_count / PAGE_SIZE)
-     }
-    }
- };
+ }
 </script>
 
 
