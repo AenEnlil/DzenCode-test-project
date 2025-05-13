@@ -116,6 +116,9 @@
 
         handleWSMessage(event_data) {
             if (event_data.type == "new_comment" && !event_data.data.parent) {
+                if (!this.comments_count) {
+                    this.comments_count = 1
+                }
                 if (this.sortedBy == 'created_at' && this.sortOrder == 'desc' && !this.previous_page) {
                     this.comments.unshift(event_data.data)
                 } else {
