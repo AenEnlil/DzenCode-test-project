@@ -2,7 +2,6 @@
     <div v-if="loading"><Loader /></div>
     <div v-else class="comment">
         <div class="comment-header">
-            <p>{{comment.id}}</p>
             <p class="username"> {{comment.username}} </p>
             <svg v-if="comment.replies && comment.replies.length"
                  @click="toggleReplies"
