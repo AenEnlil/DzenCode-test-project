@@ -1,56 +1,76 @@
 <template>
- <div class="p-4">
-  <div v-if="loading">Loading...</div>
+ <div>
+  <div v-if="loading"><Loader /></div>
   <div v-else-if="error">{{ error }}</div>
   <div v-else>
-   <div v-if="comments_count === 0">
-    <p>no comments</p>
-    <CommentForm :onSubmit="createComment" />
+   <div v-if="comments_count === 0" class='no-comments'>
+    <p class="no-comments-text">there is no comments yet, but you can...</p>
+    <div class="create-comment-button">
+      <button @click="showModalWithForm">Create comment</button>
+     </div>
    </div>
-   <table class="comments-table" v-else>
-   <thead class="comments-table-header">
-    <tr>
-     <th class="sortable" @click="sortBy('email')">Email
-      <span class="arrow" :class="sortedBy === 'email' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-     <th class="sortable" @click="sortBy('username')">Username
-      <span class="arrow" :class="sortedBy === 'username' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-     <th>Homepage</th>
-     <th>Text</th>
-     <th class="sortable" @click="sortBy('created_at')">Date
-      <span class="arrow" :class="sortedBy === 'created_at' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
-     </th>
-    </tr>
+   <div v-else>
+     <table class="comments-table">
+      <thead class="comments-table-header">
+       <tr>
+         <th class="sortable" @click="sortBy('email')">Email
+          <span class="arrow" :class="sortedBy === 'email' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+         </th>
+         <th class="sortable" @click="sortBy('username')">Username
+           <span class="arrow" :class="sortedBy === 'username' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+         </th>
+         <th>Homepage</th>
+         <th>Text</th>
+         <th class="sortable" @click="sortBy('created_at')">Date
+          <span class="arrow" :class="sortedBy === 'created_at' ? (sortOrder === 'asc' ? 'up' : 'down') : ''"></span>
+        </th>
+       </tr>
    </thead>
-   <tbody>
-    <tr v-for="comment in comments" :key="comment.id" @click="goToComment(comment.id)">
-     <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
-     <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
-     <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
-     <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
-     <td class="date-cell"> {{ formatDate(comment.created_at) }} </td>
-    </tr>
-   </tbody>
+      <tbody>
+        <tr v-for="comment in comments" :key="comment.id" @click="goToComment(comment.id)">
+         <td class="email-cell" :title="getTooltip(comment.email, 40)"> {{ getPreview(comment.email, 40) }} </td>
+         <td class="username-cell" :title="getTooltip(comment.username, 40)"> {{ getPreview(comment.username, 40) }} </td>
+         <td class="homepage-cell" :title="getTooltip(comment.homepage, 60)"> {{ getPreview(comment.homepage, 60) }} </td>
+         <td class="text-cell" :title="getTooltip(comment.text, 300)"> {{ getPreview(comment.text, 300) }} </td>
+         <td class="date-cell"> {{ formatDate(comment.created_at) }} </td>
+        </tr>
+      </tbody>
   </table>
+     <div class="buttons">
+         <div class="pagination">
+            <button :disabled="!previous_page" @click="goToPreviousPage"> Back </button>
+            <button :disabled="!next_page" @click="goToNextPage"> Next</button>
+         </div>
+         <div v-if="showNewCommentNotification" class="notification">
+            New comment available ({{newCommentsCount}})
+            <button @click="reloadTable">Refresh</button>
+        </div>
+         <div class="create-comment-button">
+            <button @click="showModalWithForm">Create comment</button>
+         </div>
+     </div>
+   </div>
   </div>
-  <div class="pagination">
-   <button :disabled="!previous_page" @click="goToPreviousPage"> Назад </button>
-   <button :disabled="!next_page" @click="goToNextPage"> Вперед </button>
-  </div>
+  <div v-if="showModal" class="modal-overlay">
+   <div class="modal-content">
+      <CommentForm :onSubmit="createComment" @cancel="showModal = false"/>
+   </div>
+    </div>
  </div>
 </template>
 
 <script>
- import axios from 'axios'
- import { toRaw } from 'vue'
- import { API_BASE_URL, PAGE_SIZE } from '@/config'
- import { formatDate } from '@/service.js'
+ import api from '@/services/api.js'
+ import { PAGE_SIZE, WS_BASE_URL } from '@/config'
+ import { formatDate } from '@/services/utils.js'
+ import { subscribeWS, unsubscribeWS } from '@/services/websocket.js'
  import CommentForm from '@/components/CommentForm.vue'
+ import Loader from '@/components/Loader.vue'
  export default {
     name: 'CommentsTable',
     components: {
-     CommentForm
+     CommentForm,
+     Loader
     },
     data() {
         return {
@@ -62,18 +82,25 @@
             next_page: null,
             previous_page: null,
             comments_count: null,
-            currentPage: 1
+            showModal: false,
+            showNewCommentNotification: false,
+            newCommentsCount: 0
         }
     },
     mounted() {
         this.fetchComments()
+        subscribeWS(this.handleWSMessage)
     },
+    beforeUnmount() {
+        unsubscribeWS(this.handleWSMessage)
+    },
+
     methods: {
         async fetchComments({ url=null, query={} } = {}) {
-         var url = url ? url : API_BASE_URL+'/comments/'
+         var url = url ? url : '/comments/'
 
          try {
-          const response = await axios.get(url, {params: query})
+          const response = await api.get(url, {params: query})
           this.comments = response.data.results
           this.comments_count = response.data.count
           this.next_page = response.data.next
@@ -81,6 +108,34 @@
           this.loading = false }
          catch (error) {
           console.error('error') }
+        },
+
+        showModalWithForm() {
+          this.showModal = true
+        },
+
+        handleWSMessage(event_data) {
+            if (event_data.type == "new_comment" && !event_data.data.parent) {
+                if (!this.comments_count) {
+                    this.comments_count = 1
+                }
+                if (this.sortedBy == 'created_at' && this.sortOrder == 'desc' && !this.previous_page) {
+                    this.comments.unshift(event_data.data)
+                } else {
+                    this.showNewCommentNotification = true
+                    this.newCommentsCount += 1
+                }
+            }
+        },
+        resetNewCommentsCountAndNotification() {
+            this.showNewCommentNotification = false
+            this.newCommentsCount = 0
+        },
+
+        reloadTable() {
+            this.resetNewCommentsCountAndNotification()
+            var params = this.getSortParams()
+            this.fetchComments({ query: params })
         },
 
         isTooLong(text, limit) {
@@ -118,22 +173,20 @@
           this.sortOrder = 'asc' }
          var params = this.getSortParams()
          this.fetchComments({ query: params })
-        },
-
-        loadPage(page_number) {
-         this.currentPage = page_number
-         console.log(page_number, this.currentPage)
+         this.resetNewCommentsCountAndNotification()
         },
 
         goToNextPage() {
          if (this.next_page) {
           this.fetchComments({url: this.next_page})
+          this.resetNewCommentsCountAndNotification()
          }
         },
 
         goToPreviousPage() {
          if (this.previous_page) {
           this.fetchComments({url: this.previous_page})
+          this.resetNewCommentsCountAndNotification()
          }
         },
 
@@ -141,10 +194,14 @@
           formData.parent = null
 
           try {
-            await axios.post(API_BASE_URL+'/comments/', formData)
+            await api.post('/comments/', formData)
+            this.showModal = false
           } catch (error) {
-            console.log("Error while sending comment", error)
-          }
+            if (error.response && error.response.data) {
+              return Promise.reject(error.response.data)
+            }
+            console.log("Error while creating comment", error)
+            }
         },
 
         goToComment(id) {
@@ -152,13 +209,9 @@
         },
 
     },
-    computed: {
-     totalPages() {
-      return Math.ceil(this.comments_count / PAGE_SIZE)
-     }
-    }
- };
+ }
 </script>
+
 
 <style scoped>
  .comments-table {
@@ -251,7 +304,87 @@ td:nth-child(5){
 }
 
 .pagination {
-  margin-top: 10px;
+    display: flex;
+    gap: 7px;
+}
+
+.pagination button:disabled {
+    background-color: white;
+}
+
+.modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+.modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+button {
+  background-color: #bfc7ff;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #444;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Montserrat";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.buttons {
+    display: flex;
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+button:hover {
+  background-color: #6c7ae0;
+}
+
+.create-comment-button {
+    margin-right: 10px;
+}
+
+.no-comments-text{
+    margin-bottom: 10px;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-transform: uppercase;
+    font-family: 'Montserrat';
+    font-weight: 600;
+}
+
+.no-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
 }
 
 </style>

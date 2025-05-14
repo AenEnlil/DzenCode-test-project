@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -29,12 +30,15 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+REDIS_HOST, REDIS_PORT = os.getenv('REDIS_HOST'), os.getenv('REDIS_PORT', 6379)
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'comments',
+    'jwt_auth',
 ]
 
 MIDDLEWARE = [
@@ -74,7 +79,18 @@ TEMPLATES = [
     },
 ]
 
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+
 WSGI_APPLICATION = 'conf.wsgi.application'
+ASGI_APPLICATION = 'conf.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(REDIS_HOST, REDIS_PORT, 0)],
+        },
+    },
+}
 
 
 # Database
@@ -142,3 +158,29 @@ ALLOWED_HTML_ATTRIBUTES = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:8000']
+
+MEDIA_URL = '/uploads/'
+MEDIA_ROOT = 'uploads/'
+
+# CACHE settings
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+    }
+}
+
+# CELERY settings
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
+
+# REST FRAMEWORK setting
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': []
+}
+
+# JWT settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': os.getenv('ACCESS_TOKEN_LIFETIME', timedelta(minutes=5)),
+    'REFRESH_TOKEN_LIFETIME': os.getenv('REFRESH_TOKEN_LIFETIME', timedelta(days=1))
+}
+

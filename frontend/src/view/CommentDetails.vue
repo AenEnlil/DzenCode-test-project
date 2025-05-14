@@ -1,6 +1,6 @@
 <template>
     <div class="comment-details">
-        <div v-if="loading">Loading...</div>
+        <div v-if="loading"><Loader /></div>
         <div v-else-if="error" class="error">{{ error }}</div>
         <div v-else>
             <Comment :comment="comment" />
@@ -9,12 +9,12 @@
 </template>
 
 <script>
-    import axios from 'axios'
-    import { API_BASE_URL } from '@/config'
+    import api from '@/services/api.js'
     import Comment from '@/components/Comment.vue'
+    import Loader from '@/components/Loader.vue'
     export default {
         name: 'CommentDetails',
-        components: { Comment },
+        components: { Comment, Loader },
         data() {
             return {
                 comment: {},
@@ -31,7 +31,7 @@
                 this.loading = true
                 const id = this.$route.params.id
                 try {
-                    const commentRes = await axios.get(`${API_BASE_URL}/comments/${id}`)
+                    const commentRes = await api.get(`/comments/${id}`)
                     this.comment = commentRes.data
                 } catch (error) {
                     console.error(error)

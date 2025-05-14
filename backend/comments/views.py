@@ -4,7 +4,11 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
+from jwt_auth.permissions import IsGuest
+from jwt_auth.authentication_classes import CustomJWTAuthentication
 from .models import Comment
 from .serializers import CommentSerializer, CommentDetailsSerializer
 from .paginators import CommentsListPaginator, RepliesPaginator
@@ -18,6 +22,8 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
     ordering_fields = ['email', 'username', 'created_at']
     ordering = ['-created_at']
     pagination_classes = {'list': CommentsListPaginator, 'get_replies': RepliesPaginator}
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsGuest]
 
     def get_pagination_class(self):
         return self.pagination_classes.get(self.action, None)
@@ -50,18 +56,25 @@ class CommentViewSet(GenericViewSet, ListModelMixin):
             queryset = queryset.filter(parent_id=self.kwargs.get('pk'))
         return queryset
 
+    @method_decorator(cache_page(5))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, kwargs)
+
     def create(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        data = serializer.data
+        return Response(data)
 
+    @method_decorator(cache_page(10))
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.has_replies = Comment.objects.filter(parent=instance.id).exists()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @method_decorator(cache_page(5))
     @action(methods=['get'], detail=False, url_path='(?P<pk>[0-9]+)/replies')
     def get_replies(self, request, *args, **kwargs):
         # check if replies has nested replies

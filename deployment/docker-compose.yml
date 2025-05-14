@@ -1,6 +1,18 @@
 version: '3'
 
 services:
+  redis:
+    image: 'redis:8-alpine'
+    container_name: redis
+    restart: always
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
   database:
     image: 'postgres:14.17'
     container_name: postgresql_db
@@ -27,9 +39,51 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_PORT: 5432
+      REDIS_HOST: redis
     build:
       context: ../backend
       dockerfile: 'Dockerfile'
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+  celery:
+    container_name: celery_worker
+    build:
+      context: ../backend
+      dockerfile: 'Dockerfile'
+    command: celery -A conf worker -l info
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: database
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_PORT: 5432
+      REDIS_HOST: redis
+    depends_on:
+      - backend-app
+      - redis
+  frontend-app:
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_API_URL: '/api/v1'
+        VITE_WS_BASE_URL: '/ws'
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend-app
+    volumes:
+      - uploads_data:/app/uploads
+
+
+
+volumes:
+  redis-data:
+  uploads_data:
